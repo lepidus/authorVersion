@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE locale SYSTEM "../../../../../lib/pkp/dtd/locale.dtd">
+<!--
+  * plugins/generic/versao-do-autor/locale/en_US/locale.xml
+  *
+  * Copyright (c) 2014-2020 Simon Fraser University
+  * Copyright (c) 2017-2020 John Willinsky
+  * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+  * Localization information: https://pkp.sfu.ca/wiki/index.php?title=Translating_OxS
+  -->
+<locale name="es_ES" full_name="Español">
+	<message key="plugins.generic.versaoDoAutor.displayName">Plugin de Versión de Autor</message>
+	<message key="plugins.generic.versaoDoAutor.description">Reglas: Los autores solo pueden publicar si tienen publicaciones anteriores en el mismo servidor.</message>
+	<message key="plugins.generic.versaoDoAutor.required.publishedBefore">Debe tener al menos una publicación publicada en este servidor.</message>
+</locale>
