@@ -17,17 +17,18 @@ class VersaoDoAutorPlugin extends GenericPlugin {
 	 */
 	public function register($category, $path, $mainContextId = NULL) {
 		$success = parent::register($category, $path, $mainContextId);
+		
 		if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) return true;
 		if ($success && $this->getEnabled($mainContextId)) {
-
-			// By default OPS installation will not allow authors to publish. Override the default so that custom publishing rulesets can be used.
-			\HookRegistry::register('Publication::canAuthorPublish', [$this, 'setAuthorCanPublish']);
 
 			// Add a new ruleset for publishing
 			\HookRegistry::register('Publication::validatePublish', [$this, 'validate']);
 
 			// Test validation rules in this plugin
 			\HookRegistry::register('Publication::testAuthorValidatePublish', [$this, 'validateTest']);
+
+			// Para sobrescrever um template
+			HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
 
 			// Show plugin rules for editors in settings
 			\HookRegistry::register('Settings::Workflow::listScreeningPlugins', [$this, 'listRules']);
@@ -64,16 +65,6 @@ class VersaoDoAutorPlugin extends GenericPlugin {
 		return __('plugins.generic.versaoDoAutor.description');
 	}
 
-	/**
-	 * Let authors publish when this plugin is enabled
-	 *
-	 * @param string $hookName string
-	 * @param array $args
-	 * @return boolean
-	 */
-	function setAuthorCanPublish($hookName, $args) {
-		return true;
-	}
 
 	/**
 	 * Show plugin rules for editors in settings
