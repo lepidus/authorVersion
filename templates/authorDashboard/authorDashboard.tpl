@@ -108,36 +108,20 @@
 									</ul>
 								</dropdown>
 							</span>
-							{if $canPublish}
-							<span class="pkpPublication__relation">
-								<dropdown
-									class="pkpWorkflow__relation"
-									label="{translate key="publication.relation"}"
-								>
-									<pkp-form class="pkpWorkflow__relateForm" v-bind="components.{$smarty.const.FORM_ID_RELATION}" @set="set">
-								</dropdown>
-							</span>
-							{/if}
-							
+													
 							<template slot="actions">
 								<pkp-button
-									v-if="workingPublication.status === getConstant('STATUS_QUEUED')"
+									v-if="workingPublication.status === getConstant('STATUS_QUEUED') && submission.status === getConstant('STATUS_PUBLISHED')"
 									ref="publish"
-									:label="submission.status === getConstant('STATUS_PUBLISHED') ? i18n.publish : i18n.schedulePublication"
+									:label="i18n.publish"
 									@click="openPublish"
 								></pkp-button>
-								{* <pkp-button
+								<pkp-button
 									v-else-if="workingPublication.status === getConstant('STATUS_SCHEDULED')"
 									label="{translate key="publication.unschedule"}"
 									:is-warnable="true"
 									@click="openUnpublish"
-								></pkp-button> *}
-								{* <pkp-button
-									v-else-if="workingPublication.status === getConstant('STATUS_PUBLISHED')"
-									label="{translate key="publication.unpublish"}"
-									:is-warnable="true"
-									@click="openUnpublish"
-								></pkp-button> *}
+								></pkp-button>
 								<pkp-button
 									v-if="canCreateNewVersion"
 									ref="createVersion"
