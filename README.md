@@ -2,5 +2,4 @@
 
 Para OPS 3.2
 
-Regras: um autor poderá editar seus artigos publicados.
-
+Permite que um autor publique novas versões de um artigo que já foi publicado.
