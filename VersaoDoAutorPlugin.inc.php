@@ -11,7 +11,6 @@
  */
 import('lib.pkp.classes.plugins.GenericPlugin');
 class VersaoDoAutorPlugin extends GenericPlugin {
-	public $canPublish = 0;
 	/**
 	 * @copydoc GenericPlugin::register()
 	 */
