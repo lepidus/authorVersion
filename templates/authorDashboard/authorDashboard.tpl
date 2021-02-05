@@ -84,7 +84,7 @@
 							<span v-else class="pkpPublication__statusUnpublished">{translate key="publication.status.unpublished"}</span>
 						</span>
 							<span v-if="publicationList.length > 1" class="pkpPublication__version">
-								<strong tabindex="0">{{ i18n.version }}</strong> {{ workingPublication.id }}
+								<strong tabindex="0">{{ i18n.version }}</strong> {{ workingPublication.version }}
 								<dropdown
 									class="pkpPublication__versions"
 									label="{translate key="publication.version.all"}"
@@ -98,7 +98,7 @@
 												:disabled="publication.id === workingPublication.id"
 												@click="setWorkingPublicationById(publication.id)"
 											>
-												{{ publication.id }} /
+												{{ publication.version }} /
 												<template v-if="publication.status === getConstant('STATUS_QUEUED') && publication.id === currentPublication.id">{translate key="publication.status.unscheduled"}</template>
 												<template v-else-if="publication.status === getConstant('STATUS_SCHEDULED')">{translate key="publication.status.scheduled"}</template>
 												<template v-else-if="publication.status === getConstant('STATUS_PUBLISHED')">{translate key="publication.status.published"}</template>
@@ -110,18 +110,20 @@
 							</span>
 													
 							<template slot="actions">
-								<pkp-button
-									v-if="workingPublication.status === getConstant('STATUS_QUEUED') && submission.status === getConstant('STATUS_PUBLISHED')"
-									ref="publish"
-									:label="i18n.publish"
-									@click="openPublish"
-								></pkp-button>
-								<pkp-button
-									v-else-if="workingPublication.status === getConstant('STATUS_SCHEDULED')"
-									label="{translate key="publication.unschedule"}"
-									:is-warnable="true"
-									@click="openUnpublish"
-								></pkp-button>
+								{if $canPublish}
+									<pkp-button
+										v-if="workingPublication.status === getConstant('STATUS_QUEUED')"
+										ref="publish"
+										:label="i18n.publish"
+										@click="openPublish"
+									></pkp-button>
+									<pkp-button
+										v-else-if="workingPublication.status === getConstant('STATUS_SCHEDULED')"
+										label="{translate key="publication.unschedule"}"
+										:is-warnable="true"
+										@click="openUnpublish"
+									></pkp-button>
+								{/if}
 								<pkp-button
 									v-if="canCreateNewVersion"
 									ref="createVersion"

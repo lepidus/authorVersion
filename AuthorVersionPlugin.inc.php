@@ -1,16 +1,16 @@
 <?php
 /**
- * @file plugins/generic/versao-do-autor/VersaoDoAutorPlugin.inc.php
+ * @file plugins/generic/authorVersion/AuthorVersionPlugin.inc.php
  *
  * 
  *
- * @class VersaoDoAutorPlugin
- * @ingroup plugins_generic_versao-do-autor
+ * @class AuthorVersionPlugin
+ * @ingroup plugins_generic_authorVersion
  * 
  *
  */
 import('lib.pkp.classes.plugins.GenericPlugin');
-class VersaoDoAutorPlugin extends GenericPlugin {
+class AuthorVersionPlugin extends GenericPlugin {
 	/**
 	 * @copydoc GenericPlugin::register()
 	 */
@@ -31,10 +31,6 @@ class VersaoDoAutorPlugin extends GenericPlugin {
 		return $success;
 	}
 
-	//
-	// Required functions for all OPS screening plugins
-	//
-
 	/**
 	 * Provide a name for this plugin
 	 *
@@ -44,7 +40,7 @@ class VersaoDoAutorPlugin extends GenericPlugin {
 	 * @return string
 	 */
 	public function getDisplayName() {
-		return __('plugins.generic.versaoDoAutor.displayName');
+		return __('plugins.generic.authorVersion.displayName');
 	}
 
 	/**
@@ -56,7 +52,7 @@ class VersaoDoAutorPlugin extends GenericPlugin {
 	 * @return string
 	 */
 	public function getDescription() {
-		return __('plugins.generic.versaoDoAutor.description');
+		return __('plugins.generic.authorVersion.description');
 	}
 
 	
@@ -68,7 +64,7 @@ class VersaoDoAutorPlugin extends GenericPlugin {
 	 * @return boolean
 	 */
 	function setAuthorCanPublishVersion($hookName, $args) {
-		return true;
+		return false;
 	}
 
 }
