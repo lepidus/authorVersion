@@ -124,13 +124,15 @@
 									</pkp-button>
 								</template>
 							{/if}
-							<pkp-button
-								v-if="canCreateNewVersion"
-								ref="createVersion"
-								@click="createVersion"
-							>
-								{translate key="publication.createVersion"}
-							</pkp-button>
+							<template slot="actions">
+								<pkp-button
+									v-if="canCreateNewVersion"
+									ref="createVersion"
+									@click="createVersion"
+								>
+									{translate key="publication.createVersion"}
+								</pkp-button>
+							</template>
 					</pkp-header>
 					<div
 						v-if="workingPublication.status === getConstant('STATUS_PUBLISHED')"
