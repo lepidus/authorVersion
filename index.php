@@ -5,9 +5,9 @@
 /**
  * @file plugins/generic/authorVersion/index.php
  *
- * Copyright (c) 2014-2020 Simon Fraser University
- * Copyright (c) 2003-2029 John Willinsky
- * Distributed under the GNU GPL v3. For full terms see the file docs/COPYING.
+ * Copyright (c) 2020-2021 Lepidus Tecnologia
+ * Copyright (c) 2020-2021 SciELO
+ * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
  *
  * @ingroup plugins_generic_authorVersion
  * @brief Wrapper for the Author Version plugin.

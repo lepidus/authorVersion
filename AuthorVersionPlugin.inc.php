@@ -2,13 +2,15 @@
 /**
  * @file plugins/generic/authorVersion/AuthorVersionPlugin.inc.php
  *
- * 
+ * Copyright (c) 2020-2021 Lepidus Tecnologia
+ * Copyright (c) 2020-2021 SciELO
+ * Distributed under the GNU GPL v3. For full terms see LICENSE or https://www.gnu.org/licenses/gpl-3.0.txt
  *
  * @class AuthorVersionPlugin
  * @ingroup plugins_generic_authorVersion
- * 
  *
  */
+
 import('lib.pkp.classes.plugins.GenericPlugin');
 class AuthorVersionPlugin extends GenericPlugin {
 	/**
