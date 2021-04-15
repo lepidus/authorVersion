@@ -98,7 +98,7 @@
 									</ul>
 								</dropdown>
 							</span>
-							<span class="pkpPublication__relation">
+							<span class="pkpPublication__relation" v-if="workingPublication.relationStatus != {$smarty.const.PUBLICATION_RELATION_PUBLISHED} && workingPublication.status === getConstant('STATUS_PUBLISHED')"> 
 								<dropdown
 									class="pkpWorkflow__relation"
 									label="{translate key="publication.relation"}"
@@ -126,7 +126,7 @@
 							{/if}
 							<template slot="actions">
 								<pkp-button
-									v-if="canCreateNewVersion"
+									v-if="workingPublication.relationStatus != {$smarty.const.PUBLICATION_RELATION_PUBLISHED} && workingPublication.status === getConstant('STATUS_PUBLISHED')"
 									ref="createVersion"
 									@click="createVersion"
 								>
