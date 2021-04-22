@@ -7,34 +7,35 @@ describe('Creates and post a submission', function() {
 
         cy.get('div[id=contextGridContainer]').find('a').contains('Criar Servidor').click();
 
-		// cy.wait(2000); 
-		// cy.get('div[id=editContext]').find('button[label="Français (Canada)"]').click();
-		// cy.get('input[name="name-fr_CA"]').type(Cypress.env('contextTitles')['fr_CA'], {delay: 0});
-		// cy.get('button').contains('Save').click()
-		// cy.get('div[id=context-name-error-en_US]').find('span').contains('This field is required.');
-		// cy.get('div[id=context-acronym-error-en_US]').find('span').contains('This field is required.');
-		// cy.get('div[id=context-urlPath-error]').find('span').contains('This field is required.');
-		// cy.get('div[id=context-primaryLocale-error]').find('span').contains('This field is required.');
-		// cy.get('input[name="name-en_US"]').type(Cypress.env('contextTitles')['en_US'], {delay: 0});
-		// cy.get('input[name=acronym-en_US]').type('JPK', {delay: 0});
-		// cy.get('span').contains('Enable this preprint server').siblings('input').check();
-		// cy.get('input[name="supportedLocales"][value="en_US').check();
-		// cy.get('input[name="supportedLocales"][value="fr_CA').check();
-		// cy.get('input[name="primaryLocale"][value="en_US').check();
+		cy.wait(2000); 
+		cy.get('div[id=editContext]').find('button[label="English"]').click();
+		cy.get('input[name="name-en_US"]').type(Cypress.env('contextTitles')['en_US'], {delay: 0});
+		cy.get('button').contains('Salvar').click()
+		cy.get('div[id=context-name-error-pt_BR]').find('span').contains('Este campo é obrigatório.');
+		cy.get('div[id=context-acronym-error-pt_BR]').find('span').contains('Este campo é obrigatório.');
+		cy.get('div[id=context-urlPath-error]').find('span').contains('Este campo é obrigatório.');
+		cy.get('div[id=context-primaryLocale-error]').find('span').contains('Este campo é obrigatório.');
+		cy.get('input[name="name-pt_BR"]').type('teste', {delay: 0});
+		cy.get('input[name=acronym-pt_BR]').type('JPK', {delay: 0});
+		cy.get('span').contains('Permita que esse servidor de preprints seja listado publicamente neste site').siblings('input').check();
+		cy.get('input[name="supportedLocales"][value="pt_BR').check();
+		cy.get('input[name="supportedLocales"][value="en_US').check();
+		cy.get('input[name="primaryLocale"][value="pt_BR').check();
 
-		// // Test invalid path characters
-		// cy.get('input[name=urlPath]').type('public&-)knowledge', {delay: 0});
-		// cy.get('button').contains('Save').click()
-		// cy.get('div[id=context-urlPath-error]').find('span').contains('The path can only include letters');
-		// cy.get('input[name=urlPath]').clear().type('publicknowledge', {delay: 0});
+		// Test invalid path characters
+		cy.get('input[name=urlPath]').type('public&-)knowledge', {delay: 0});
+		cy.get('button').contains('Salvar').click()
+		cy.get('div[id=context-urlPath-error]').find('span').contains('O caminho pode incluir apenas letras, números e os caracteres _ e -. Ele deve começar e terminar com uma letra ou número.');
+		cy.get('input[name=urlPath]').clear().type('publicknowledge', {delay: 0});
 
-		// // Context descriptions
-		// cy.setTinyMceContent('context-description-control-en_US', Cypress.env('contextDescriptions')['en_US']);
-		// cy.setTinyMceContent('context-description-control-fr_CA', Cypress.env('contextDescriptions')['fr_CA']);
-		// cy.get('button').contains('Save').click();
+		// Context descriptions
+		cy.setTinyMceContent('context-description-control-pt_BR', 'testando');
+		cy.setTinyMceContent('context-description-control-en_US', Cypress.env('contextDescriptions')['en_US']);
+		cy.get('button').contains('Salvar').click();
 
-		// // Wait for it to finish up before moving on
-		// cy.contains('Settings Wizard', {timeout: 30000});
+		// Wait for it to finish up before moving on
+		cy.contains('Assistente de Configurações', {timeout: 30000});
+		cy.logout();
     });
 
 //     it('Create users', function() {
