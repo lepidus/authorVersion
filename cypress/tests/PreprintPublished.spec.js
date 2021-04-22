@@ -5,7 +5,7 @@ describe('Check inactive features', function() {
 
     it('Change relation to published and verify preprint published as author', function() {
 
-        cy.login('author', 'authorauthor' );
+        cy.login('testauthor', 'testauthortestauthor');
         cy.get('#pkpDropdown1').click();
         cy.get('.profile.show > .dropdown-menu > :nth-child(1) > a').click();
         cy.get('#archive-button').click();
@@ -22,7 +22,7 @@ describe('Check inactive features', function() {
 
     it('Verify preprint published as moderator', function() {
 
-        cy.login('moderator', 'moderatormoderator' );
+        cy.login('testmoderator', 'testmoderatortestmoderator');
         cy.get('#pkpDropdown1').click();
         cy.get('.profile.show > .dropdown-menu > :nth-child(1) > a').click();
         cy.get('a:contains("Submissions")').click();

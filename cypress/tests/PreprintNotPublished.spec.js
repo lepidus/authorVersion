@@ -3,7 +3,7 @@
 describe('Check active features', function() {
     it('Change relation to not submitted and verify preprint not submitted as author', function() {
 
-        cy.login('author', 'authorauthor' );
+        cy.login('testauthor', 'testauthortestauthor');
         cy.get('#pkpDropdown1').click();
         cy.get('.profile.show > .dropdown-menu > :nth-child(1) > a').click();
         cy.get('#archive-button').click();
@@ -20,7 +20,7 @@ describe('Check active features', function() {
 
     it('Verify preprint not submitted as moderator', function() {
 
-        cy.login('moderator', 'moderatormoderator' );
+        cy.login('testmoderator', 'testmoderatortestmoderator');
         cy.get('#pkpDropdown1').click();
         cy.get('.profile.show > .dropdown-menu > :nth-child(1) > a').click();
         cy.get('a:contains("Submissions")').click();
@@ -33,7 +33,7 @@ describe('Check active features', function() {
 
     it('Change relation to submitted and verify preprint submitted as author', function() {
 
-        cy.login('author', 'authorauthor' );
+        cy.login('testauthor', 'testauthortestauthor');
         cy.get('#pkpDropdown1').click();
         cy.get('.profile.show > .dropdown-menu > :nth-child(1) > a').click();
         cy.get('#archive-button').click();
@@ -50,7 +50,7 @@ describe('Check active features', function() {
 
     it('Verify preprint submitted as moderator', function() {
 
-        cy.login('moderator', 'moderatormoderator' );
+        cy.login('testmoderator', 'testmoderatortestmoderator');
         cy.get('#pkpDropdown1').click();
         cy.get('.profile.show > .dropdown-menu > :nth-child(1) > a').click();
         cy.get('a:contains("Submissions")').click();
