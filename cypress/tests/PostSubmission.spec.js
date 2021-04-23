@@ -2,44 +2,27 @@
 
 describe('Creates and post a submission', function() {
 
-	var admin = 'admin';
-	var adminPassword = 'admin';
+	var admin = 'desenvLepidus';
+	var adminPassword = 'desenvLepidus2021';
 
     it('Create server', function(){
         cy.login(admin, adminPassword);
+        cy.visit('/index/admin/contexts');
+        cy.get('.app__headerActions > .pkpDropdown > .pkpButton').click();
+		cy.get('a:contains("English")').click();
 
 		cy.get("body").then($body => {
-			if ($body.find('a:contains(' + admin + '):visible').length > 0) {   
-				cy.get('a:contains(' + admin + '):visible').click();
-				cy.get('a:contains("Dashboard")').click();
-				cy.get('.pkpDropdown').click();
-				cy.get('a:contains("English")').click();
-				cy.get('.app__nav a').contains('Website').click();
-				cy.get('.app__page > :nth-child(2) > :nth-child(1) > #setup-button').click();
-				cy.get('span[id="cell-en_US-contextPrimary"]').click();
-				cy.get('tr[id="component-grid-settings-languages-managelanguagegrid-row-pt_BR"] > :nth-child(5) > :nth-child(1)').click();
-				cy.logout();
-				//cy.get('tr[id="component-grid-settings-languages-managelanguagegrid-row-en_US"] > :nth-child(5) > :nth-child(1)').click();
-
+			if ($body.find('span:contains("authorversionserver"):visible').length > 0) {   
+                cy.get('.app__contexts > .pkpButton').click();
+                cy.get('a:contains("Author Version Server")').click();
 			}
-			else if($body.find('button[id="myQueue-button"]').length > 0){
-				cy.get('.pkpDropdown').click();
-				cy.get('a:contains("English")').click();
-				cy.get('.app__nav a').contains('Website').click();
-				cy.get('.app__page > :nth-child(2) > :nth-child(1) > #setup-button').click();
-				cy.get('span[id="cell-en_US-contextPrimary"]').click();
-				cy.get('tr[id="component-grid-settings-languages-managelanguagegrid-row-pt_BR"] > :nth-child(5) > :nth-child(1)').click();
-				cy.logout();
-			}else{
-				cy.get('.pkpDropdown').click();
-				cy.get('a:contains("English")').click();
-
+			else{
 				cy.get('div[id=contextGridContainer]').find('a').contains('Create').click();
 
 				// Fill in various details
 				cy.wait(2000); // https://github.com/tinymce/tinymce/issues/4355
-				cy.get('div[id=editContext]').find('button[label="Português (Brasil)"]').click();
-				cy.get('input[name="name-pt_BR"]').type("Author Version Server", {delay: 0});
+				cy.get('div[id=editContext]').find('button[label="Español (España)"]').click();
+				cy.get('input[name="name-es_ES"]').type("Author Version Server", {delay: 0});
 				cy.get('button').contains('Save').click()
 				cy.get('div[id=context-name-error-en_US]').find('span').contains('This field is required.');
 				cy.get('div[id=context-acronym-error-en_US]').find('span').contains('This field is required.');
@@ -49,24 +32,23 @@ describe('Creates and post a submission', function() {
 				cy.get('input[name=acronym-en_US]').type('AVS', {delay: 0});
 				cy.get('span').contains('Enable this preprint server').siblings('input').check();
 				cy.get('input[name="supportedLocales"][value="en_US').check();
-				cy.get('input[name="supportedLocales"][value="pt_BR').check();
+				cy.get('input[name="supportedLocales"][value="es_ES').check();
 				cy.get('input[name="primaryLocale"][value="en_US').check();
 
 				// Test invalid path characters
-				cy.get('input[name=urlPath]').type('public&-)knowledge', {delay: 0});
+				cy.get('input[name=urlPath]').type('authorversionserver', {delay: 0});
 				cy.get('button').contains('Save').click()
-				cy.get('div[id=context-urlPath-error]').find('span').contains('The path can only include letters');
-				cy.get('input[name=urlPath]').clear().type('publicknowledge', {delay: 0});
+				
 
 				// Context descriptions
 				cy.setTinyMceContent('context-description-control-en_US', "Server for testing the Author's Version Plugin");
-				cy.setTinyMceContent('context-description-control-pt_BR', "Server for testing the Author's Version Plugin");
+				cy.setTinyMceContent('context-description-control-es_ES', "Server for testing the Author's Version Plugin");
 				cy.get('button').contains('Save').click();
 
 				// Wait for it to finish up before moving on
 				cy.contains('Settings Wizard', {timeout: 30000});
 				cy.get('button:contains("Languages")').click();
-				cy.get('tr[id="component-grid-settings-languages-managelanguagegrid-row-pt_BR"] > :nth-child(5) > :nth-child(1)').click();
+				cy.get('tr[id="component-grid-settings-languages-managelanguagegrid-row-es_ES"] > :nth-child(5) > :nth-child(1)').click();
 				cy.logout();
 		
 			}
@@ -79,7 +61,7 @@ describe('Creates and post a submission', function() {
 
 		cy.login('testmoderator', ' testmoderatortestmoderator');
 		cy.get("body").then($body => {
-			if ($body.find('.pkp_form_error:contains("Invalid username or password. Please try again."):visible').length > 0) {
+			if (($body.find('.pkp_form_error:contains("Invalid username or password. Please try again."):visible').length > 0) || ($body.find('.pkp_form_error:contains("Login e/ou senha inválido(s). Tente novamente."):visible').length > 0)) {
 				cy.logout();
 
 				cy.login(admin, adminPassword);
