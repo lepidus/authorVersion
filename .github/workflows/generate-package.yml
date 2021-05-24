@@ -19,7 +19,7 @@ jobs:
           mkdir $PLUGIN_NAME
           ls -la
           shopt -s extglob
-          cp -r !($PLUGIN_NAME|.git*|.|..) $PLUGIN_NAME
+          cp -r !($PLUGIN_NAME|.git*|.|..|cypress) $PLUGIN_NAME
           ls -la
           tar -zcvf $PLUGIN_NAME.tar.gz $PLUGIN_NAME
           ls -la
