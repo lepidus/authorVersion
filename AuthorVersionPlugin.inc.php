@@ -42,21 +42,21 @@ class AuthorVersionPlugin extends GenericPlugin
     }
 
 
-	public function setAuthorCanPublishVersion($hookName, $args)
+    public function setAuthorCanPublishVersion($hookName, $args)
     {
         return false;
     }
 
-	public function loadResourcesToWorkflow($hookName, $args)
-	{
-		$templateMgr = $params[0];
+    public function loadResourcesToWorkflow($hookName, $args)
+    {
+        $templateMgr = $params[0];
         $template = $params[1];
 
         if ($template != 'authorDashboard/authorDashboard.tpl') {
             return false;
         }
 
-		$templateMgr->addJavaScript(
+        $templateMgr->addJavaScript(
             'authorVersionWorkflowPage',
             $this->plugin->getPluginFullPath() . '/js/AuthorVersionWorkflowPage.js',
             [
@@ -64,12 +64,12 @@ class AuthorVersionPlugin extends GenericPlugin
                 'contexts' => ['backend']
             ]
         );
-		
-		$templateMgr->assign([
+
+        $templateMgr->assign([
             'pageComponent' => 'AuthorVersionWorkflowPage',
         ]);
 
-		return false;
-	}
+        return false;
+    }
 
 }
