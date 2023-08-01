@@ -53,8 +53,8 @@ describe('Checks functionality for unpublished history for an author', function 
 		cy.get('h2:contains("Submission complete")');
 		cy.get('a:contains("Review this submission")').click();
 
-        cy.visit('index.php/publicknowledge/authorDashboard/submission/21');
         cy.get('button:contains("Post")').should('not.exist');
+        cy.get('button:contains("Submit New Version")').should('not.exist');
         cy.logout();
     });
     it('Post submission', function () {
