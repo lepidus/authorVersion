@@ -132,6 +132,12 @@
 								>
 									{translate key="publication.createVersion"}
 								</pkp-button>
+								<pkp-button
+									v-if="workingPublication.status != getConstant('STATUS_PUBLISHED') && workingPublication.version > 1"
+									{* @click="openSubmitVersionModal" *}
+								>
+									{translate key="plugins.generic.authorVersion.publication.submitVersion"}
+								</pkp-button>
 							</template>
 					</pkp-header>
 					<div

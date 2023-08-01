@@ -17,6 +17,5 @@ msgstr "Plugin de Versão do Autor"
 msgid "plugins.generic.authorVersion.description"
 msgstr "Regras: Autores podem criar versões dos seus trabalhos publicados."
 
-msgid "plugins.generic.authorVersion.required.publishedBefore"
-msgstr "Você precisa ter pelo menos uma publicação neste servidor."
-
+msgid "plugins.generic.authorVersion.publication.submitVersion"
+msgstr "Submeter Nova Versão"

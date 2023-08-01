@@ -63,10 +63,16 @@ describe('Checks functionality for unpublished history for an author', function 
 		cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
     });
-    it('Check presence of button to create new version for authors', function () {
+    it('Button to create new version', function () {
         cy.login('zwoods', null, 'publicknowledge');
         cy.get('archive-button').click();
         cy.contains('View Woods').click({force: true});
-        cy.get('button:contains("Create New Version")');
+        cy.get('button:contains("Create New Version")').click();
+    });
+    if('Button to submit new version to moderation', function () {
+        cy.login('zwoods', null, 'publicknowledge');
+        cy.get('archive-button').click();
+        cy.contains('View Woods').click({force: true});
+        cy.get('button:contains("Submit New Version")').click();
     });
 });
