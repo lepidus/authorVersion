@@ -51,7 +51,7 @@ describe('Checks functionality for unpublished history for an author', function 
 
         cy.waitJQuery();
 		cy.get('h2:contains("Submission complete")');
-		cy.get('a:contains("Review this submission")').click();
+		cy.get('a:contains("Proceed to post")').click();
 
         cy.get('button:contains("Post")').should('not.exist');
         cy.get('button:contains("Submit New Version")').should('not.exist');
@@ -65,13 +65,13 @@ describe('Checks functionality for unpublished history for an author', function 
     });
     it('Button to create new version', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.get('archive-button').click();
+        cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Create New Version")').click();
     });
-    if('Button to submit new version to moderation', function () {
+    it('Button to submit new version to moderation', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.get('archive-button').click();
+        cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Submit New Version")').click();
     });
