@@ -81,7 +81,7 @@ class AuthorVersionPlugin extends GenericPlugin
         $context = $request->getContext();
         $submission = $templateMgr->get_template_vars('submission');
         $publication = $submission->getLatestPublication();
-        
+
         $this->import('classes.components.forms.SubmitVersionForm');
         $submitVersionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/submitVersion', null, null, ['publicationId' => $publication->getId()]);
         $submitVersionForm = new SubmitVersionForm($submitVersionUrl);

@@ -38,10 +38,10 @@ class AuthorVersionHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $queryParams = $slimRequest->getQueryParams();
-        
+
         $versionJustification = $requestParams['versionJustification'];
         $publicationId = (int) $queryParams['publicationId'];
-        
+
         $publicationService = Services::get('publication');
         $publication = $publicationService->get($publicationId);
         $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
