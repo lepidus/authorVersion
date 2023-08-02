@@ -27,6 +27,7 @@ class AuthorVersionPlugin extends GenericPlugin
             HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
             HookRegistry::register('Publication::canAuthorPublish', array($this, 'setAuthorCanPublishVersion'));
             HookRegistry::register('Dispatcher::dispatch', array($this, 'setupAuthorVersionHandler'));
+            HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
         }
         return $success;
     }
@@ -44,6 +45,19 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function setAuthorCanPublishVersion($hookName, $args)
     {
+        return false;
+    }
+
+    public function addOurFieldsToPublicationSchema($hookName, $args)
+    {
+        $schema =& $args[0];
+
+        $schema->properties->{'versionJustification'} = (object) [
+            'type' => 'string',
+            'apiSummary' => true,
+            'validation' => ['nullable'],
+        ];
+
         return false;
     }
 
@@ -65,9 +79,11 @@ class AuthorVersionPlugin extends GenericPlugin
     private function addSubmitVersionForm($templateMgr, $request)
     {
         $context = $request->getContext();
+        $submission = $templateMgr->get_template_vars('submission');
+        $publication = $submission->getLatestPublication();
         
         $this->import('classes.components.forms.SubmitVersionForm');
-        $submitVersionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/submitVersion');
+        $submitVersionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/submitVersion', null, null, ['publicationId' => $publication->getId()]);
         $submitVersionForm = new SubmitVersionForm($submitVersionUrl);
 
         $workflowComponents = $templateMgr->getState('components');
