@@ -19,3 +19,9 @@ msgstr "Regras: Autores podem criar versões dos seus trabalhos publicados."
 
 msgid "plugins.generic.authorVersion.publication.submitVersion"
 msgstr "Submeter Nova Versão"
+
+msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification"
+msgstr "Justificativa"
+
+msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification.description"
+msgstr "Informe a justificativa para a criação dessa versão"

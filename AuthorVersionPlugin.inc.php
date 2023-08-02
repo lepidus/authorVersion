@@ -26,7 +26,7 @@ class AuthorVersionPlugin extends GenericPlugin
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates')); // Para sobrescrever templates
             HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
             HookRegistry::register('Publication::canAuthorPublish', array($this, 'setAuthorCanPublishVersion'));
-
+            HookRegistry::register('Dispatcher::dispatch', array($this, 'setupAuthorVersionHandler'));
         }
         return $success;
     }
@@ -49,27 +49,54 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function loadResourcesToWorkflow($hookName, $args)
     {
-        $templateMgr = $params[0];
-        $template = $params[1];
+        $templateMgr = $args[0];
+        $template = $args[1];
+        $request = Application::get()->getRequest();
 
         if ($template != 'authorDashboard/authorDashboard.tpl') {
             return false;
         }
 
-        $templateMgr->addJavaScript(
-            'authorVersionWorkflowPage',
-            $this->plugin->getPluginFullPath() . '/js/AuthorVersionWorkflowPage.js',
-            [
-                'priority' => STYLE_SEQUENCE_LAST,
-                'contexts' => ['backend']
-            ]
-        );
-
-        $templateMgr->assign([
-            'pageComponent' => 'AuthorVersionWorkflowPage',
-        ]);
+        $this->addSubmitVersionForm($templateMgr, $request);
 
         return false;
+    }
+
+    private function addSubmitVersionForm($templateMgr, $request)
+    {
+        $context = $request->getContext();
+        
+        $this->import('classes.components.forms.SubmitVersionForm');
+        $submitVersionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/submitVersion');
+        $submitVersionForm = new SubmitVersionForm($submitVersionUrl);
+
+        $workflowComponents = $templateMgr->getState('components');
+        $workflowComponents[$submitVersionForm->id] = $submitVersionForm->getConfig();
+
+        $templateMgr->setState([
+            'components' => $workflowComponents
+        ]);
+    }
+
+    public function setupAuthorVersionHandler($hookname, $request)
+    {
+        $router = $request->getRouter();
+        if (!($router instanceof \APIRouter)) {
+            return;
+        }
+
+        if (str_contains($request->getRequestPath(), 'api/v1/authorVersion')) {
+            $this->import('api.v1.authorVersion.AuthorVersionHandler');
+            $handler = new AuthorVersionHandler();
+        }
+
+        if (!isset($handler)) {
+            return;
+        }
+
+        $router->setHandler($handler);
+        $handler->getApp()->run();
+        exit;
     }
 
 }

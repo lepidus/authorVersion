@@ -134,10 +134,23 @@
 								</pkp-button>
 								<pkp-button
 									v-if="workingPublication.status != getConstant('STATUS_PUBLISHED') && workingPublication.version > 1"
-									{* @click="openSubmitVersionModal" *}
+									ref="submitVersionButton"
+									@click="$modal.show('submitVersion')"
 								>
 									{translate key="plugins.generic.authorVersion.publication.submitVersion"}
 								</pkp-button>
+								<modal
+									v-bind="MODAL_PROPS"
+									name="submitVersion"
+									@closed="setFocusToRef('submitVersionButton')"
+								>
+									<modal-content
+										modalName="submitVersion"
+										title="{translate key="plugins.generic.authorVersion.publication.submitVersion"}"
+									>
+										<pkp-form v-bind="components.submitVersionForm" @set="set"></pkp-form>
+									</modal-content>
+								</modal>
 							</template>
 					</pkp-header>
 					<div
