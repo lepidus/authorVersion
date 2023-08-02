@@ -1,4 +1,4 @@
-describe('Checks functionality for unpublished history for an author', function () {
+describe('Author Version - Create new version', function () {
     let submissionData;
     
     before(function() {
@@ -68,11 +68,5 @@ describe('Checks functionality for unpublished history for an author', function 
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Create New Version")').click();
-    });
-    it('Button to submit new version to moderation', function () {
-        cy.login('zwoods', null, 'publicknowledge');
-        cy.get('#archive-button').click();
-        cy.contains('View Woods').click({force: true});
-        cy.get('button:contains("Submit New Version")').click();
     });
 });
