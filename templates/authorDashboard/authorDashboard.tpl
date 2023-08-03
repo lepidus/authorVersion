@@ -133,7 +133,7 @@
 									{translate key="publication.createVersion"}
 								</pkp-button>
 								<pkp-button
-									v-if="workingPublication.status != getConstant('STATUS_PUBLISHED') && workingPublication.version > 1"
+									v-if="workingPublication.status != getConstant('STATUS_PUBLISHED') && workingPublication.version > 1 && !workingPublication.versionJustification"
 									ref="submitVersionButton"
 									@click="$modal.show('submitVersion')"
 								>
