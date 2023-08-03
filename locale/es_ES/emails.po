@@ -1,0 +1,14 @@
+msgid "emails.submittedVersion.subject"
+msgstr "Presentada una nueva versión de preprint"
+
+msgid "emails.submittedVersion.body"
+msgstr ""
+"El autor ha enviado una nueva versión del preprint \"{$submissionTitle}\".<br>\n"
+"<br>\n"
+"Justificación: \"{$versionJustification}\""
+"<br>\n"
+"<a href=\"{$linkToSubmission}\">Enlace al preprint</a>"
+
+msgid "emails.submittedVersion.description"
+msgstr ""
+"Plantilla de correo electrónico utilizada para notificar a los moderadores que una versión de un preprint está lista para publicarse"

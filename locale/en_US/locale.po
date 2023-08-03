@@ -17,5 +17,11 @@ msgstr "Author Version Plugin"
 msgid "plugins.generic.authorVersion.description"
 msgstr "Rules: Authors can create versions of their published works."
 
-msgid "plugins.generic.authorVersion.required.publishedBefore"
-msgstr "You need to have at least one published publication on this server."
+msgid "plugins.generic.authorVersion.publication.submitVersion"
+msgstr "Submit New Version"
+
+msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification"
+msgstr "Justification"
+
+msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification.description"
+msgstr "Inform the justification for creating this version"
