@@ -47,12 +47,12 @@ class AuthorVersionHandler extends APIHandler
         $publication = $publicationService->get($publicationId);
         $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
 
-        $this->sendSubmittedVersionEmail($publication);
+        $this->sendSubmittedVersionEmail($publication, $versionJustification);
 
         return $response->withStatus(200);
     }
 
-    private function sendSubmittedVersionEmail($publication)
+    private function sendSubmittedVersionEmail($publication, $versionJustification)
     {
         $request = $this->getRequest();
         $context = $request->getContext();
@@ -69,7 +69,8 @@ class AuthorVersionHandler extends APIHandler
 
         $email->sendWithParams([
             'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
-            'linkToSubmission' => $submissionUrl
+            'linkToSubmission' => $submissionUrl,
+            'versionJustification' => $versionJustification
         ]);
     }
 

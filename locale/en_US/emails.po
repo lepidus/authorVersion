@@ -5,6 +5,8 @@ msgid "emails.submittedVersion.body"
 msgstr ""
 "A new version of the preprint \"{$submissionTitle}\" has been submitted by the author.<br>\n"
 "<br>\n"
+"Justification: \"{$versionJustification}\""
+"<br>\n"
 "<a href=\"{$linkToSubmission}\">Link to preprint</a>"
 
 msgid "emails.submittedVersion.description"
