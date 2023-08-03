@@ -42,6 +42,10 @@ class AuthorVersionPlugin extends GenericPlugin
         return __('plugins.generic.authorVersion.description');
     }
 
+    public function getInstallEmailTemplatesFile()
+    {
+        return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml';
+    }
 
     public function setAuthorCanPublishVersion($hookName, $args)
     {

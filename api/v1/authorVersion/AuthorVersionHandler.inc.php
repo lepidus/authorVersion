@@ -1,6 +1,7 @@
 <?php
 
 import('lib.pkp.classes.handler.APIHandler');
+import('lib.pkp.classes.mail.MailTemplate');
 
 class AuthorVersionHandler extends APIHandler
 {
@@ -46,6 +47,45 @@ class AuthorVersionHandler extends APIHandler
         $publication = $publicationService->get($publicationId);
         $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
 
+        $this->sendSubmittedVersionEmail($publication);
+
         return $response->withStatus(200);
+    }
+
+    private function sendSubmittedVersionEmail($publication)
+    {
+        $request = $this->getRequest();
+        $context = $request->getContext();
+
+        $email = new MailTemplate('SUBMITTED_VERSION_NOTIFICATION', null, $context, false);
+        $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
+
+        $moderators = $this->getModeratorsAssigned($publication);
+        foreach ($moderators as $moderator) {
+            $email->addRecipient($moderator->getEmail(), $moderator->getFullName());
+        }
+
+        $submissionUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId'));
+
+        $email->sendWithParams([
+            'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
+            'linkToSubmission' => $submissionUrl
+        ]);
+    }
+
+    private function getModeratorsAssigned($publication): array
+    {
+        $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
+        $assignments = $stageAssignmentDao->getBySubmissionAndRoleId($publication->getData('submissionId'), ROLE_ID_SUB_EDITOR);
+        $moderators = array();
+
+        while ($assignment = $assignments->next()) {
+            $userId = $assignment->getUserId();
+            $userDao = DAORegistry::getDAO('UserDAO');
+
+            $moderators[] = $userDao->getById($userId);
+        }
+
+        return $moderators;
     }
 }
