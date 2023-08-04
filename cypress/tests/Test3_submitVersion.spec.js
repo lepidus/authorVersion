@@ -18,7 +18,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
-        cy.contains('View version justification').click();
+        cy.get('button:contains("Version justification")').click();
         cy.contains(versionJustification);
     });
     it('Version justification displayed in preprint landing page', function () {
@@ -26,10 +26,11 @@ describe('Author Version - Submit new version', function () {
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         
+        cy.get('#publication-button').click();
         cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
 
-        cy.get('.pkpHeader__actions button:contains("View")').click();
+        cy.get('.pkpHeader__actions a:contains("View")').click();
 
         cy.get('h2:contains("Version justification")');
         cy.contains(versionJustification);

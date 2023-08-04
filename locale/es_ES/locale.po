@@ -22,7 +22,7 @@ msgid "plugins.generic.authorVersion.publication.submitVersion"
 msgstr "Enviar Nueva Versión"
 
 msgid "plugins.generic.authorVersion.versionJustification"
-msgstr "Justificación de la nueva versión"
+msgstr "Justificación de la versión"
 
 msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification"
 msgstr "Justificación"
