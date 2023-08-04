@@ -1,7 +1,7 @@
 describe('Author Version - Submit new version', function () {
     let versionJustification = 'This version was created to test the Author Version plugin';
 
-    it('Button to submit new version to moderators', function () {
+    it('Submit new version to moderators', function () {
         cy.login('zwoods', null, 'publicknowledge');
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
@@ -14,13 +14,17 @@ describe('Author Version - Submit new version', function () {
         cy.get('div[modalname="submitVersion"] button:contains("Save")').click();
     });
     it('Moderator views version justification on workflow', function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Woods');
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.get('#archive-button').click();
+        cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
         cy.contains('View version justification').click();
         cy.contains(versionJustification);
     });
     it('Version justification displayed in preprint landing page', function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Woods');
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.get('#archive-button').click();
+        cy.contains('View Woods').click({force: true});
         
         cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
