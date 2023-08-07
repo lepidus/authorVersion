@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file plugins/generic/authorVersion/AuthorVersionPlugin.inc.php
  *
@@ -12,6 +13,7 @@
  */
 
 import('lib.pkp.classes.plugins.GenericPlugin');
+
 class AuthorVersionPlugin extends GenericPlugin
 {
     public function register($category, $path, $mainContextId = null)
@@ -21,8 +23,8 @@ class AuthorVersionPlugin extends GenericPlugin
         if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
             return true;
         }
-        if ($success && $this->getEnabled($mainContextId)) {
 
+        if ($success && $this->getEnabled($mainContextId)) {
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates')); // Para sobrescrever templates
             HookRegistry::register('Template::Workflow', array($this, 'addWorkflowModifications'));
             HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
@@ -30,7 +32,9 @@ class AuthorVersionPlugin extends GenericPlugin
             HookRegistry::register('Dispatcher::dispatch', array($this, 'setupAuthorVersionHandler'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Templates::Preprint::Details', array($this, 'showVersionJustificationOnPreprintDetails'));
+            HookRegistry::register('TemplateManager::display', array($this, 'addNewVersionSubmissionTab'));
         }
+
         return $success;
     }
 
@@ -123,7 +127,7 @@ class AuthorVersionPlugin extends GenericPlugin
         ]);
     }
 
-    public function setupAuthorVersionHandler($hookname, $request)
+    public function setupAuthorVersionHandler($hookName, $request)
     {
         $router = $request->getRouter();
         if (!($router instanceof \APIRouter)) {
@@ -162,4 +166,32 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
+    public function addNewVersionSubmissionTab($hookName, $params)
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
+
+        if ($template !== 'dashboard/index.tpl') {
+            return false;
+        }
+
+        $templateMgr->registerFilter("output", array($this, 'newVersionSubmissionTabFilter'));
+
+        return false;
+    }
+
+    public function newVersionSubmissionTabFilter($output, $templateMgr)
+    {
+        if (preg_match('/<\/tab[^>]+>/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+            $match = $matches[0][0];
+            $offset = $matches[0][1];
+
+            $newOutput = substr($output, 0, $offset);
+            $newOutput .= $templateMgr->fetch($this->getTemplateResource('newVersionSubmissionTab.tpl'));
+            $newOutput .= substr($output, $offset);
+            $output = $newOutput;
+            $templateMgr->unregisterFilter('output', array($this, 'newVersionSubmissionTabFilter'));
+        }
+        return $output;
+    }
 }

@@ -28,3 +28,6 @@ msgstr "Justificativa"
 
 msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification.description"
 msgstr "Informe a justificativa para a criação dessa versão"
+
+msgid "plugins.generic.authorVersion.newVersions"
+msgstr "Novas versões"
