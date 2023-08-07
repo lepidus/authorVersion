@@ -15,7 +15,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('Moderator views version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.get('#archive-button').click();
+        cy.get('#newVersion-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
         cy.get('button:contains("Version justification")').click();
@@ -23,7 +23,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('Version justification displayed in preprint landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.get('#archive-button').click();
+        cy.get('#newVersion-button').click();
         cy.contains('View Woods').click({force: true});
         
         cy.get('#publication-button').click();
