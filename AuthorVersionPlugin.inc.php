@@ -33,6 +33,7 @@ class AuthorVersionPlugin extends GenericPlugin
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
             HookRegistry::register('Templates::Preprint::Details', array($this, 'showVersionJustificationOnPreprintDetails'));
             HookRegistry::register('TemplateManager::display', array($this, 'addNewVersionSubmissionTab'));
+            HookRegistry::register('Submission::getMany::queryBuilder', array($this, 'modifySubmissionQueryBuilder'));
         }
 
         return $success;
@@ -178,19 +179,29 @@ class AuthorVersionPlugin extends GenericPlugin
         $request = Application::get()->getRequest();
         $context = $request->getContext();
         $dispatcher = $request->getDispatcher();
-        $lists = $templateMgr->getState('components');
-
         $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), '_submissions');
+
+        $lists = $templateMgr->getState('components');
+        $userRoles = $templateMgr->get_template_vars('userRoles');
+
+        $includeAssignedEditorsFilter = array_intersect([ROLE_ID_SITE_ADMIN, ROLE_ID_MANAGER], $userRoles);
+        $includeIssuesFilter = array_intersect(
+            [ROLE_ID_SITE_ADMIN, ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT],
+            $userRoles
+        );
 
         $newVersionListPanel = new \APP\components\listPanels\SubmissionsListPanel(
             'newVersion',
             __('plugins.generic.authorVersion.newVersionSubmissions'),
             [
                 'apiUrl' => $apiUrl,
-                'getParams' => [],
+                'getParams' => [
+                    'newVersionSubmitted' => true,
+                ],
                 'lazyLoad' => true,
-                'includeIssuesFilter' => false,
-                'includeAssignedEditorsFilter' => false,
+                'includeIssuesFilter' => $includeIssuesFilter,
+                'includeAssignedEditorsFilter' => $includeAssignedEditorsFilter,
+                'includeActiveSectionFiltersOnly' => true,
             ]
         );
 
@@ -215,5 +226,38 @@ class AuthorVersionPlugin extends GenericPlugin
             $templateMgr->unregisterFilter('output', array($this, 'newVersionSubmissionTabFilter'));
         }
         return $output;
+    }
+
+    public function modifySubmissionQueryBuilder($hookName, $args)
+    {
+        $submissionQB =& $args[0];
+        $requestArgs = $args[1];
+
+        if (empty($requestArgs['newVersionSubmitted'])) {
+            return;
+        }
+
+        $this->import('classes.services.queryBuilders.AuthorVersionQueryBuilder');
+        $submissionQB = new AuthorVersionQueryBuilder();
+        $submissionQB
+            ->filterByContext($requestArgs['contextId'])
+            ->orderBy($requestArgs['orderBy'], $requestArgs['orderDirection'])
+            ->assignedTo($requestArgs['assignedTo'])
+            ->filterByStatus($requestArgs['status'])
+            ->filterByStageIds($requestArgs['stageIds'])
+            ->filterByIncomplete($requestArgs['isIncomplete'])
+            ->filterByOverdue($requestArgs['isOverdue'])
+            ->filterByDaysInactive($requestArgs['daysInactive'])
+            ->filterByCategories(isset($requestArgs['categoryIds']) ? $requestArgs['categoryIds'] : null)
+            ->filterByNewVersion($requestArgs['newVersionSubmitted'])
+            ->searchPhrase($requestArgs['searchPhrase']);
+
+        if (isset($requestArgs['count'])) {
+            $submissionQB->limitTo($requestArgs['count']);
+        }
+
+        if (isset($requestArgs['offset'])) {
+            $submissionQB->offsetBy($requestArgs['count']);
+        }
     }
 }
