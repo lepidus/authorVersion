@@ -21,6 +21,9 @@ msgstr "Reglas: Los autores solo pueden publicar si tienen publicaciones anterio
 msgid "plugins.generic.authorVersion.publication.submitVersion"
 msgstr "Enviar Nueva Versión"
 
+msgid "plugins.generic.authorVersion.versionJustification"
+msgstr "Justificación de la versión"
+
 msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification"
 msgstr "Justificación"
 

@@ -24,10 +24,12 @@ class AuthorVersionPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
 
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates')); // Para sobrescrever templates
+            HookRegistry::register('Template::Workflow', array($this, 'addWorkflowModifications'));
             HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
             HookRegistry::register('Publication::canAuthorPublish', array($this, 'setAuthorCanPublishVersion'));
             HookRegistry::register('Dispatcher::dispatch', array($this, 'setupAuthorVersionHandler'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
+            HookRegistry::register('Templates::Preprint::Details', array($this, 'showVersionJustificationOnPreprintDetails'));
         }
         return $success;
     }
@@ -47,14 +49,14 @@ class AuthorVersionPlugin extends GenericPlugin
         return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml';
     }
 
-    public function setAuthorCanPublishVersion($hookName, $args)
+    public function setAuthorCanPublishVersion($hookName, $params)
     {
         return false;
     }
 
-    public function addOurFieldsToPublicationSchema($hookName, $args)
+    public function addOurFieldsToPublicationSchema($hookName, $params)
     {
-        $schema =& $args[0];
+        $schema =& $params[0];
 
         $schema->properties->{'versionJustification'} = (object) [
             'type' => 'string',
@@ -65,10 +67,33 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
-    public function loadResourcesToWorkflow($hookName, $args)
+    public function addWorkflowModifications($hookName, $params)
     {
-        $templateMgr = $args[0];
-        $template = $args[1];
+        $templateMgr =& $params[1];
+        $request = PKPApplication::get()->getRequest();
+
+        $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
+
+        return false;
+    }
+
+    public function addVersionJustificationButtonFilter($output, $templateMgr)
+    {
+        if (preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+            $posRelationsBeginning = $matches[0][1];
+
+            $versionJustificationButton = $templateMgr->fetch($this->getTemplateResource('versionJustificationWorkflow.tpl'));
+
+            $output = substr_replace($output, $versionJustificationButton, $posRelationsBeginning, 0);
+            $templateMgr->unregisterFilter('output', array($this, 'addVersionJustificationButtonFilter'));
+        }
+        return $output;
+    }
+
+    public function loadResourcesToWorkflow($hookName, $params)
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
         $request = Application::get()->getRequest();
 
         if ($template != 'authorDashboard/authorDashboard.tpl') {
@@ -117,6 +142,24 @@ class AuthorVersionPlugin extends GenericPlugin
         $router->setHandler($handler);
         $handler->getApp()->run();
         exit;
+    }
+
+    public function showVersionJustificationOnPreprintDetails($hookName, $params)
+    {
+        $templateMgr = $params[1];
+        $output =& $params[2];
+
+        $publication = $templateMgr->get_template_vars('publication');
+
+        $version = $publication->getData('version');
+        $versionJustification = $publication->getData('versionJustification');
+
+        if ($version > 1 and !is_null($versionJustification)) {
+            $templateMgr->assign('versionJustification', $versionJustification);
+            $output .= $templateMgr->fetch($this->getTemplateResource('versionJustificationBlock.tpl'));
+        }
+
+        return false;
     }
 
 }
