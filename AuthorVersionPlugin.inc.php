@@ -148,7 +148,8 @@ class AuthorVersionPlugin extends GenericPlugin
     {
         $templateMgr = $params[1];
         $output =& $params[2];
-        $publication = $templateMgr->get_template_vars('preprint')->getCurrentPublication();
+
+        $publication = $templateMgr->get_template_vars('publication');
 
         $version = $publication->getData('version');
         $versionJustification = $publication->getData('versionJustification');
