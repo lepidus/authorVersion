@@ -31,3 +31,6 @@ msgstr "Inform the justification for creating this version"
 
 msgid "plugins.generic.authorVersion.newVersions"
 msgstr "New versions"
+
+msgid "plugins.generic.authorVersion.newVersionSubmissions"
+msgstr "New version submissions"

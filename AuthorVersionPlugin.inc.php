@@ -175,6 +175,28 @@ class AuthorVersionPlugin extends GenericPlugin
             return false;
         }
 
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        $dispatcher = $request->getDispatcher();
+        $lists = $templateMgr->getState('components');
+
+        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), '_submissions');
+
+        $newVersionListPanel = new \APP\components\listPanels\SubmissionsListPanel(
+            'newVersion',
+            __('plugins.generic.authorVersion.newVersionSubmissions'),
+            [
+                'apiUrl' => $apiUrl,
+                'getParams' => [],
+                'lazyLoad' => true,
+                'includeIssuesFilter' => false,
+                'includeAssignedEditorsFilter' => false,
+            ]
+        );
+
+        $lists[$newVersionListPanel->id] = $newVersionListPanel->getConfig();
+        $templateMgr->setState(['components' => $lists]);
+
         $templateMgr->registerFilter("output", array($this, 'newVersionSubmissionTabFilter'));
 
         return false;
