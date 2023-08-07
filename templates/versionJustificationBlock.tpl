@@ -5,4 +5,10 @@
 	<div class="value">
         {$versionJustification}
     </div>
-<div>
+</div>
+
+<script>
+    const categoriesBlock = document.getElementsByClassName("item categories")[0];
+    const justificationBlock = document.getElementsByClassName('item versionJustification')[0];
+    categoriesBlock.parentNode.insertBefore(justificationBlock, categoriesBlock);
+</script>
