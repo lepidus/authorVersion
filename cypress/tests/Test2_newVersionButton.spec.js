@@ -9,11 +9,49 @@ describe('Author Version - Create new version', function () {
 		}
     });
 
+    function step1() {
+        cy.get('input[id^="checklist-"]').click({ multiple: true });
+		cy.get('input[id=privacyConsent]').click();
+		cy.get('button.submitFormButton').click();
+    }
+
+    function step2() {
+        cy.get('#submitStep2Form button.submitFormButton').click();
+    }
+
+    function step3() {
+        cy.get('input[name^="title"]').first().type(submissionData.title, { delay: 0 });
+        cy.get('label').contains('Title').click();
+        cy.get('textarea[id^="abstract-"').then((node) => {
+            cy.setTinyMceContent(node.attr("id"), submissionData.abstract);
+        });
+        cy.get('.section > label:visible').first().click();
+        cy.get('ul[id^="en_US-keywords-"]').then(node => {
+            node.tagit('createTag', submissionData.keywords[0]);
+            node.tagit('createTag', submissionData.keywords[1]);
+        });
+
+        cy.get('#submitStep3Form button.submitFormButton').click();
+    }
+
+    function step4() {
+        cy.waitJQuery();
+		cy.get('#submitStep4Form button.submitFormButton').click();
+		cy.get('button.pkpModalConfirmButton').click();
+    }
+
     it('Creates new submission as author', function () {
         cy.login('zwoods', null, 'publicknowledge');
-		
-        cy.createSubmission(submissionData);
-        cy.get('a:contains("Proceed to post")').click();
+		cy.get('div#myQueue a:contains("New Submission")').click();
+
+        step1();
+        step2();
+        step3();
+        step4();
+
+        cy.waitJQuery();
+		cy.get('h2:contains("Submission complete")');
+		cy.get('a:contains("Proceed to post")').click();
 
         cy.get('button:contains("Post")').should('not.exist');
         cy.get('button:contains("Submit New Version")').should('not.exist');
