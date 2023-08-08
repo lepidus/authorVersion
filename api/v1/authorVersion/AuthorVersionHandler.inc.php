@@ -60,9 +60,9 @@ class AuthorVersionHandler extends APIHandler
         $email = new MailTemplate('SUBMITTED_VERSION_NOTIFICATION', null, $context, false);
         $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
 
-        $moderators = $this->getModeratorsAssigned($publication);
-        foreach ($moderators as $moderator) {
-            $email->addRecipient($moderator->getEmail(), $moderator->getFullName());
+        $managers = $this->getManagersAssigned($publication);
+        foreach ($managers as $manager) {
+            $email->addRecipient($manager->getEmail(), $manager->getFullName());
         }
 
         $submissionUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId'));
@@ -74,19 +74,36 @@ class AuthorVersionHandler extends APIHandler
         ]);
     }
 
-    private function getModeratorsAssigned($publication): array
+    private function getManagersAssigned($publication): array
     {
         $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
-        $assignments = $stageAssignmentDao->getBySubmissionAndRoleId($publication->getData('submissionId'), ROLE_ID_SUB_EDITOR);
-        $moderators = array();
+        $userDao = DAORegistry::getDAO('UserDAO');
+        $allAssignments = $stageAssignmentDao->getBySubmissionAndStageId($publication->getData('submissionId'), 5);
+        $managers = array();
 
-        while ($assignment = $assignments->next()) {
+        while ($assignment = $allAssignments->next()) {
             $userId = $assignment->getUserId();
-            $userDao = DAORegistry::getDAO('UserDAO');
 
-            $moderators[] = $userDao->getById($userId);
+            if($this->userIsManager($userId)) {
+                $managers[] = $userDao->getById($userId);
+            }
         }
 
-        return $moderators;
+        return $managers;
+    }
+
+    private function userIsManager($userId): bool
+    {
+        $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
+        $userGroupsOfUser = $userGroupDao->getByUserId($userId);
+        $managerGroupName = 'preprint server manager';
+
+        while($userGroup = $userGroupsOfUser->next()) {
+            if(strtolower($userGroup->getName('en_US')) == $managerGroupName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
