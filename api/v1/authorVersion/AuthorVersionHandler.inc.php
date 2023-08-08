@@ -78,7 +78,7 @@ class AuthorVersionHandler extends APIHandler
     {
         $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
         $userDao = DAORegistry::getDAO('UserDAO');
-        $allAssignments = $stageAssignmentDao->getBySubmissionAndStageId($publication->getData('submissionId'), 5);
+        $allAssignments = $stageAssignmentDao->getBySubmissionAndStageId($publication->getData('submissionId'), WORKFLOW_STAGE_ID_PRODUCTION);
         $managers = array();
 
         while ($assignment = $allAssignments->next()) {
