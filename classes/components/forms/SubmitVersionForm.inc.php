@@ -11,7 +11,18 @@ class SubmitVersionForm extends FormComponent
         $this->id = 'submitVersionForm';
         $this->method = 'POST';
 
+        $this->addPage([
+            'id' => 'default',
+            'submitButton' => [
+                'label' => __('form.submit')
+            ],
+        ]);
+        $this->addGroup([
+            'id' => 'default',
+            'pageId' => 'default',
+        ]);
         $this->addField(new FieldText('versionJustification', [
+            'groupId' => 'default',
             'isRequired' => true,
             'label' => __('plugins.generic.authorVersion.submitVersionModal.versionJustification'),
             'description' => __('plugins.generic.authorVersion.submitVersionModal.versionJustification.description'),
