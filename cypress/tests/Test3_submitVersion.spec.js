@@ -11,7 +11,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('label:contains("Justification")');
         cy.contains('Inform the justification for creating this version');
         cy.get('input[name="versionJustification"]').clear().type(versionJustification, {delay: 0});
-        cy.get('div[modalname="submitVersion"] button:contains("Save")').click();
+        cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
     });
     it('Moderator views version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
@@ -21,7 +21,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('button:contains("Version justification")').click();
         cy.contains(versionJustification);
     });
-    it('Version justification displayed in preprint landing page', function () {
+    it('Version justification is displayed in preprint landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('#newVersion-button').click();
         cy.contains('View Woods').click({force: true});

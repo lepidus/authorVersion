@@ -148,7 +148,7 @@
 										modalName="submitVersion"
 										title="{translate key="plugins.generic.authorVersion.publication.submitVersion"}"
 									>
-										<pkp-form v-bind="components.submitVersionForm" @set="set"></pkp-form>
+										<pkp-form v-bind="components.submitVersionForm" @set="set" @success="location.reload()"></pkp-form>
 									</modal-content>
 								</modal>
 							</template>
