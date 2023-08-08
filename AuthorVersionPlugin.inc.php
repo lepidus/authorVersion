@@ -31,7 +31,7 @@ class AuthorVersionPlugin extends GenericPlugin
             HookRegistry::register('Publication::canAuthorPublish', array($this, 'setAuthorCanPublishVersion'));
             HookRegistry::register('Dispatcher::dispatch', array($this, 'setupAuthorVersionHandler'));
             HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
-            HookRegistry::register('Publication::version', array($this, 'clearVersionJustification'));
+            HookRegistry::register('Publication::version', array($this, 'preventsDuplicationOfVersionJustification'));
             HookRegistry::register('Templates::Preprint::Details', array($this, 'showVersionJustificationOnPreprintDetails'));
             HookRegistry::register('TemplateManager::display', array($this, 'addNewVersionSubmissionTab'));
             HookRegistry::register('Submission::getMany::queryBuilder', array($this, 'modifySubmissionQueryBuilder'));
@@ -73,7 +73,7 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
-    public function clearVersionJustification($hookName, $params)
+    public function preventsDuplicationOfVersionJustification($hookName, $params)
     {
         $newPublication = &$params[0];
         $request = $params[2];
