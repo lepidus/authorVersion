@@ -8,7 +8,11 @@
 </div>
 
 <script>
-    const categoriesBlock = document.getElementsByClassName("item categories")[0];
+    function insertAfter(newNode, referenceNode) {ldelim}
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    {rdelim}
+    
+    const publishedBlock = document.getElementsByClassName("item published")[0];
     const justificationBlock = document.getElementsByClassName('item versionJustification')[0];
-    categoriesBlock.parentNode.insertBefore(justificationBlock, categoriesBlock);
+    insertAfter(justificationBlock, publishedBlock);
 </script>
