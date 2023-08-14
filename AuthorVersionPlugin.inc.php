@@ -62,7 +62,7 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function addOurFieldsToPublicationSchema($hookName, $params)
     {
-        $schema =& $params[0];
+        $schema = & $params[0];
 
         $schema->properties->{'versionJustification'} = (object) [
             'type' => 'string',
@@ -89,7 +89,7 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function addWorkflowModifications($hookName, $params)
     {
-        $templateMgr =& $params[1];
+        $templateMgr = & $params[1];
         $request = PKPApplication::get()->getRequest();
 
         $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
@@ -166,7 +166,7 @@ class AuthorVersionPlugin extends GenericPlugin
     public function showVersionJustificationOnPreprintDetails($hookName, $params)
     {
         $templateMgr = $params[1];
-        $output =& $params[2];
+        $output = & $params[2];
 
         $publication = $templateMgr->get_template_vars('publication');
 
@@ -244,7 +244,7 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function modifySubmissionQueryBuilder($hookName, $args)
     {
-        $submissionQB =& $args[0];
+        $submissionQB = & $args[0];
         $requestArgs = $args[1];
 
         if (empty($requestArgs['newVersionSubmitted'])) {
