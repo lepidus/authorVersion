@@ -9,7 +9,7 @@ describe('Author Version - Submit new version', function () {
 
         cy.get('h2:contains("Submit New Version")');
         cy.get('label:contains("Justification")');
-        cy.contains('Inform the justification for creating this version');
+        cy.contains('Inform moderators and readers of the justification for creating this version. This justification will be made public on the preprint page.');
         cy.get('input[name="versionJustification"]').clear().type(versionJustification, {delay: 0});
         cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
     });
