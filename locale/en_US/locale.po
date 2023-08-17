@@ -27,7 +27,7 @@ msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification"
 msgstr "Justification"
 
 msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification.description"
-msgstr "Inform the justification for creating this version"
+msgstr "Inform moderators and readers of the justification for creating this version. This justification will be made public on the preprint page."
 
 msgid "plugins.generic.authorVersion.newVersions"
 msgstr "New versions"
