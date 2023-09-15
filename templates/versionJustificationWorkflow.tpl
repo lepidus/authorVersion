@@ -9,7 +9,7 @@
         :is-link="true"
     >
         <pkp-form
-            id="versionJustificationForm"
+            class="pkpWorkflow__versionJustificationForm"
             v-bind="components.{$smarty.const.FORM_VERSION_JUSTIFICATION}"
             @set="set"
         />
