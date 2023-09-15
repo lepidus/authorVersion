@@ -8,6 +8,10 @@
         label="{translate key="plugins.generic.authorVersion.versionJustification"}"
         :is-link="true"
     >
-        <pkp-form v-bind="components.{$smarty.const.FORM_VERSION_JUSTIFICATION}" @set="set"/>
+        <pkp-form
+            id="versionJustificationForm"
+            v-bind="components.{$smarty.const.FORM_VERSION_JUSTIFICATION}"
+            @set="set"
+        />
     </dropdown>
 </span>

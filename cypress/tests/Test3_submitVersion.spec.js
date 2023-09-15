@@ -31,7 +31,7 @@ describe('Author Version - Submit new version', function () {
         cy.contains(firstVersionJustification);
 
         cy.get('input[name="versionJustification"]').clear().type(secondVersionJustification, {delay: 0});
-        cy.get('button:contains("Save")').click();
+        cy.get('#versionJustificationForm button:contains("Save")').click();
     });
     it('Moderator edits version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
@@ -42,7 +42,7 @@ describe('Author Version - Submit new version', function () {
         cy.contains(secondVersionJustification);
 
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
-        cy.get('button:contains("Save")').click();
+        cy.get('#versionJustificationForm button:contains("Save")').click();
     });
     it('Version justification is displayed in preprint landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
