@@ -16,6 +16,11 @@ class AuthorVersionHandler extends APIHandler
                     'handler' => array($this, 'submitVersion'),
                     'roles' => $roles
                 ),
+                array(
+                    'pattern' => $this->getEndpointPattern() . '/versionJustification',
+                    'handler' => array($this, 'updateVersionJustification'),
+                    'roles' => $roles
+                ),
             ),
         );
         parent::__construct();
@@ -38,14 +43,8 @@ class AuthorVersionHandler extends APIHandler
     public function submitVersion($slimRequest, $response, $args)
     {
         $requestParams = $slimRequest->getParsedBody();
-        $queryParams = $slimRequest->getQueryParams();
-
         $versionJustification = $requestParams['versionJustification'];
-        $submissionId = (int) $queryParams['submissionId'];
-
-        $submissionService = Services::get('submission');
-        $submission = $submissionService->get($submissionId);
-        $publication = $submission->getLatestPublication();
+        $publication = $this->getLatestPublication($slimRequest);
 
         if(!is_null($publication->getData('versionJustification'))) {
             return $response->withStatus(400);
@@ -55,6 +54,18 @@ class AuthorVersionHandler extends APIHandler
         $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
 
         $this->sendSubmittedVersionEmail($publication, $versionJustification);
+
+        return $response->withStatus(200);
+    }
+
+    public function updateVersionJustification($slimRequest, $response, $args)
+    {
+        $requestParams = $slimRequest->getParsedBody();
+        $versionJustification = $requestParams['versionJustification'];
+        $publication = $this->getLatestPublication($slimRequest);
+
+        $publicationService = Services::get('publication');
+        $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
 
         return $response->withStatus(200);
     }
@@ -79,6 +90,18 @@ class AuthorVersionHandler extends APIHandler
             'linkToSubmission' => $submissionUrl,
             'versionJustification' => $versionJustification
         ]);
+    }
+
+    private function getLatestPublication($slimRequest)
+    {
+        $queryParams = $slimRequest->getQueryParams();
+        $submissionId = (int) $queryParams['submissionId'];
+
+        $submissionService = Services::get('submission');
+        $submission = $submissionService->get($submissionId);
+        $publication = $submission->getLatestPublication();
+
+        return $publication;
     }
 
     private function getManagersAssigned($publication): array
