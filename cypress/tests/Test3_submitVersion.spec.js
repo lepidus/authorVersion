@@ -69,6 +69,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
         cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
         
+        cy.waitJQuery();
         cy.get('button:contains("Version justification")').click();
         cy.contains(finalVersionJustification);
     });
