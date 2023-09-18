@@ -1,5 +1,7 @@
 describe('Author Version - Submit new version', function () {
-    let versionJustification = 'This version was created to test the Author Version plugin';
+    let firstVersionJustification = 'created to test';
+    let secondVersionJustification = 'created to test the plugin';
+    let finalVersionJustification = 'Version was created to test the Author Version plugin';
 
     it('Submit new version to moderators', function () {
         cy.login('zwoods', null, 'publicknowledge');
@@ -10,7 +12,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('h2:contains("Submit New Version")');
         cy.get('label:contains("Justification")');
         cy.contains('Inform moderators and readers of the justification for creating this version. This justification will be made public on the preprint page.');
-        cy.get('input[name="versionJustification"]').clear().type(versionJustification, {delay: 0});
+        cy.get('input[name="versionJustification"]').clear().type(firstVersionJustification, {delay: 0});
         cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
     });
     it('Moderator views version justification on workflow', function () {
@@ -19,7 +21,28 @@ describe('Author Version - Submit new version', function () {
         cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
         cy.get('button:contains("Version justification")').click();
-        cy.contains(versionJustification);
+        cy.contains(firstVersionJustification);
+    });
+    it('Author edits version justification on workflow', function () {
+        cy.login('zwoods', null, 'publicknowledge');
+        cy.get('#archive-button').click();
+        cy.contains('View Woods').click({force: true});
+        cy.get('button:contains("Version justification")').click();
+        cy.contains(firstVersionJustification);
+
+        cy.get('input[name="versionJustification"]').clear().type(secondVersionJustification, {delay: 0});
+        cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
+    });
+    it('Moderator edits version justification on workflow', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.get('#newVersion-button').click();
+        cy.contains('View Woods').click({force: true});
+        cy.get('#publication-button').click();
+        cy.get('button:contains("Version justification")').click();
+        cy.contains(secondVersionJustification);
+
+        cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
+        cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
     });
     it('Version justification is displayed in preprint landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
@@ -33,7 +56,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('.pkpHeader__actions a:contains("View")').click();
 
         cy.get('h2:contains("Version justification")');
-        cy.contains(versionJustification);
+        cy.contains(finalVersionJustification);
     })
     it('Checks if version submission works if performed just after version creation', function () {
         cy.login('zwoods', null, 'publicknowledge');
@@ -43,10 +66,11 @@ describe('Author Version - Submit new version', function () {
         cy.wait(2000);
 
         cy.get('button:contains("Submit New Version")').click();
-        cy.get('input[name="versionJustification"]').clear().type(versionJustification, {delay: 0});
+        cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
         cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
         
+        cy.waitJQuery();
         cy.get('button:contains("Version justification")').click();
-        cy.contains(versionJustification);
+        cy.contains(finalVersionJustification);
     });
 });

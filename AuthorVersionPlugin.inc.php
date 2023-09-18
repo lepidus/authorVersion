@@ -116,11 +116,19 @@ class AuthorVersionPlugin extends GenericPlugin
         $template = $params[1];
         $request = Application::get()->getRequest();
 
-        if ($template != 'authorDashboard/authorDashboard.tpl') {
-            return false;
+        if ($template == 'authorDashboard/authorDashboard.tpl') {
+            $this->addSubmitVersionForm($templateMgr, $request);
         }
 
-        $this->addSubmitVersionForm($templateMgr, $request);
+        if ($template == 'authorDashboard/authorDashboard.tpl' or $template == 'workflow/workflow.tpl') {
+            $this->addVersionJustificationForm($templateMgr, $request);
+        }
+
+        $templateMgr->addStyleSheet(
+            'authorVersionWorkflow',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/styles/workflow.css',
+            ['contexts' => ['backend']]
+        );
 
         return false;
     }
@@ -136,6 +144,23 @@ class AuthorVersionPlugin extends GenericPlugin
 
         $workflowComponents = $templateMgr->getState('components');
         $workflowComponents[$submitVersionForm->id] = $submitVersionForm->getConfig();
+
+        $templateMgr->setState([
+            'components' => $workflowComponents
+        ]);
+    }
+
+    private function addVersionJustificationForm($templateMgr, $request)
+    {
+        $context = $request->getContext();
+        $submission = $templateMgr->get_template_vars('submission');
+
+        $this->import('classes.components.forms.VersionJustificationForm');
+        $updateJustificationUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/versionJustification', null, null, ['submissionId' => $submission->getId()]);
+        $versionJustificationForm = new VersionJustificationForm($updateJustificationUrl, $submission);
+
+        $workflowComponents = $templateMgr->getState('components');
+        $workflowComponents[$versionJustificationForm->id] = $versionJustificationForm->getConfig();
 
         $templateMgr->setState([
             'components' => $workflowComponents
