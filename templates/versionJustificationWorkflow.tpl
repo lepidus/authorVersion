@@ -1,7 +1,6 @@
 <span 
     class="pkpPublication__versionJustification"
     v-if="workingPublication.version > 1 && (workingPublication.versionJustification || currentPublication.versionJustification)"
-    style="margin: 0 0.5rem 0 0"
 > 
     <dropdown
         class="pkpWorkflow__versionJustification"

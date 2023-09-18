@@ -124,6 +124,12 @@ class AuthorVersionPlugin extends GenericPlugin
             $this->addVersionJustificationForm($templateMgr, $request);
         }
 
+        $templateMgr->addStyleSheet(
+            'authorVersionWorkflow',
+            $request->getBaseUrl() . '/' . $this->getPluginPath() . '/styles/workflow.css',
+            ['contexts' => ['backend']]
+        );
+
         return false;
     }
 

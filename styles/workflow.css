@@ -1,0 +1,8 @@
+.pkpPublication__versionJustification {
+    margin: 0 0.5rem 0 0;
+}
+
+.pkpWorkflow__versionJustification .pkpDropdown__content {
+	min-width: 25em;
+	max-width: 25em;
+}
