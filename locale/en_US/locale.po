@@ -23,6 +23,9 @@ msgstr "Submit New Version"
 msgid "plugins.generic.authorVersion.versionJustification"
 msgstr "Version justification"
 
+msgid "plugins.generic.authorVersion.lastVersionJustification"
+msgstr "Justification of the last version submitted"
+
 msgid "plugins.generic.authorVersion.submitVersionModal.versionJustification"
 msgstr "Justification"
 
