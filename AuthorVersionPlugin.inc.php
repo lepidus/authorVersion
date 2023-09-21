@@ -122,6 +122,7 @@ class AuthorVersionPlugin extends GenericPlugin
 
         if ($template == 'authorDashboard/authorDashboard.tpl' or $template == 'workflow/workflow.tpl') {
             $this->addVersionJustificationForm($templateMgr, $request);
+            $this->addLatestPublicationState($templateMgr, $request);
         }
 
         $templateMgr->addStyleSheet(
@@ -164,6 +165,25 @@ class AuthorVersionPlugin extends GenericPlugin
 
         $templateMgr->setState([
             'components' => $workflowComponents
+        ]);
+    }
+
+    private function addLatestPublicationState($templateMgr, $request)
+    {
+        $submission = $templateMgr->get_template_vars('submission');
+        $context = $request->getContext();
+
+        $latestPublicationProps = Services::get('publication')->getFullProperties(
+            $submission->getLatestPublication(),
+            [
+                'context' => $context,
+                'submission' => $submission,
+                'request' => $request,
+            ]
+        );
+
+        $templateMgr->setState([
+            'latestPublication' => $latestPublicationProps
         ]);
     }
 
