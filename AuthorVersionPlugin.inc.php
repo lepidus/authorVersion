@@ -122,9 +122,8 @@ class AuthorVersionPlugin extends GenericPlugin
 
         if ($template == 'authorDashboard/authorDashboard.tpl' or $template == 'workflow/workflow.tpl') {
             $this->addVersionJustificationForm($templateMgr, $request);
+            $this->addLatestPublicationState($templateMgr, $request);
         }
-
-        $this->addLatestPublicationState($templateMgr, $request);
 
         $templateMgr->addStyleSheet(
             'authorVersionWorkflow',
