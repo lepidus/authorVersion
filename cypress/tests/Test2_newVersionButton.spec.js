@@ -75,7 +75,7 @@ describe('Author Version - Create new version', function () {
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
 
-        cy.get('All Versions').click();
+        cy.contains('All Versions').click();
         cy.get('button:contains("1 / Posted")').click();
         cy.wait(1000);
         cy.get('button:contains("Create New Version")').should('not.exist');
