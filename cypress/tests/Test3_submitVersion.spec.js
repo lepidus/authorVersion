@@ -57,7 +57,7 @@ describe('Author Version - Submit new version', function () {
 
         cy.get('h2:contains("Version justification")');
         cy.contains(finalVersionJustification);
-    })
+    });
     it('Checks if version submission works if performed just after version creation', function () {
         cy.login('zwoods', null, 'publicknowledge');
         cy.get('#archive-button').click();
