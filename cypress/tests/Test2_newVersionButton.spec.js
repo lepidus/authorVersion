@@ -76,7 +76,7 @@ describe('Author Version - Create new version', function () {
         cy.contains('View Woods').click({force: true});
 
         cy.contains('All Versions').click();
-        cy.get('button:contains("1 / Posted")').click();
+        cy.get('.pkpPublication__versions').get('button:contains("1")').click();
         cy.wait(1000);
         cy.get('button:contains("Create New Version")').should('not.exist');
     });
