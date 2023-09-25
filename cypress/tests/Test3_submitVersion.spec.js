@@ -44,7 +44,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
         cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
     });
-    it('Version justification is displayed in preprint landing page', function () {
+    it('After posting new version - Cant edit justification; Justification shown in landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('#newVersion-button').click();
         cy.contains('View Woods').click({force: true});
@@ -53,8 +53,11 @@ describe('Author Version - Submit new version', function () {
         cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
 
-        cy.get('.pkpHeader__actions a:contains("View")').click();
+        cy.get('button:contains("Version justification")').click();
+        cy.get('input[name="versionJustification"]').should('not.exist');
+        cy.contains(finalVersionJustification);
 
+        cy.get('.pkpHeader__actions a:contains("View")').click();
         cy.get('h2:contains("Version justification")');
         cy.contains(finalVersionJustification);
     });
