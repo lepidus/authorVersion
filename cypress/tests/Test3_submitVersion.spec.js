@@ -52,6 +52,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('#publication-button').click();
         cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
+        cy.reload();
 
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('not.exist');
