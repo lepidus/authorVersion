@@ -14,9 +14,6 @@ class VersionJustificationForm extends FormComponent
         $this->method = 'POST';
 
         $publication = $submission->getLatestPublication();
-        if(is_null($publication->getData('versionJustification'))) {
-            $publication = $submission->getCurrentPublication();
-        }
 
         $this->addField(new FieldText('versionJustification', [
             'label' => __('plugins.generic.authorVersion.lastVersionJustification'),

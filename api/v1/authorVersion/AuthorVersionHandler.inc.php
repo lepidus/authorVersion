@@ -47,7 +47,10 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if(!is_null($publication->getData('versionJustification'))) {
+        if(!is_null($publication->getData('versionJustification'))
+            || $publication->getData('status') == STATUS_PUBLISHED
+            || $publication->getData('version') == 1
+        ) {
             return $response->withStatus(400);
         }
 
@@ -66,8 +69,8 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if(is_null($publication->getData('versionJustification'))) {
-            $publication = $submission->getCurrentPublication();
+        if($publication->getData('status') == STATUS_PUBLISHED || $publication->getData('version') == 1) {
+            return $response->withStatus(400);
         }
 
         $publicationService = Services::get('publication');
