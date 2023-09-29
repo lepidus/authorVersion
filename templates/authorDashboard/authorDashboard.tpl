@@ -145,7 +145,7 @@
 									@closed="setFocusToRef('submitVersionButton')"
 								>
 									<modal-content
-										modal-name="submitVersion"
+										modalName="submitVersion"
 										title="{translate key="plugins.generic.authorVersion.publication.submitVersion"}"
 									>
 										<pkp-form v-bind="components.submitVersionForm" @set="set" @success="location.reload()"></pkp-form>
