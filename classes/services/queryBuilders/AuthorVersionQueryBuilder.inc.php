@@ -4,17 +4,20 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class AuthorVersionQueryBuilder extends \APP\Services\QueryBuilders\SubmissionQueryBuilder
 {
-    protected $newVersionSubmitted = false;
+    protected $newVersion = false;
+    protected $nonSubmitted = false;
 
-    public function filterByNewVersion($newVersionSubmitted)
+    public function filterByNewVersion($newVersion, $nonSubmitted)
     {
-        $this->newVersionSubmitted = $newVersionSubmitted;
+        $this->newVersion = $newVersion;
+        $this->nonSubmitted = $nonSubmitted;
+
         return $this;
     }
 
     public function appGet($q)
     {
-        if ($this->newVersionSubmitted) {
+        if ($this->newVersion) {
             $q->leftJoin('publications as nvp', 'nvp.submission_id', '=', 's.submission_id')
                 ->leftJoin('publication_settings as nvps', 'nvp.publication_id', '=', 'nvps.publication_id')
                 ->where(function ($q) {

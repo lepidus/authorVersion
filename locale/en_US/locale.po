@@ -36,4 +36,7 @@ msgid "plugins.generic.authorVersion.newVersions"
 msgstr "New versions"
 
 msgid "plugins.generic.authorVersion.newVersionSubmissions"
-msgstr "New version submissions"
+msgstr "Submissions with new version"
+
+msgid "plugins.generic.authorVersion.nonSubmittedVersions"
+msgstr "Non-submitted versions"
