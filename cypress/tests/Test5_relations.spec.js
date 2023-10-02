@@ -22,5 +22,6 @@ describe('Author Version - Submission relations updating', function () {
 
         cy.reload();
         cy.get('button:contains("Relations")').should('not.exist');
+        cy.get('button:contains("Create New Version")').should('not.exist');
     });
 });
