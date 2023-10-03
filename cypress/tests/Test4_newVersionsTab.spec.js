@@ -73,13 +73,13 @@ describe('Author Version - New versions tab', function () {
 
         cy.contains('Woods');
         cy.contains('Submission for testing Author Version plugin');
-        cy.get('.listPanel__item--submission').should('have.length', 1);
+        cy.get('.listPanel__item--submission:visible').should('have.length', 1);
 
         cy.get('.listPanel__header button:contains("Filters")').click();
         cy.get('.pkpFilter button:contains("Non-submitted")').click();
 
         cy.contains('Rossi');
         cy.contains(submissionData.title);
-        cy.get('.listPanel__item--submission').should('have.length', 1);
+        cy.get('.listPanel__item--submission:visible').should('have.length', 1);
     });
 });
