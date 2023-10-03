@@ -40,4 +40,4 @@ msgid "plugins.generic.authorVersion.newVersionSubmissions"
 msgstr "Envíos con nueva versión"
 
 msgid "plugins.generic.authorVersion.nonSubmittedVersions"
-msgstr "Versiones no enviadas"
+msgstr "No enviadas"
