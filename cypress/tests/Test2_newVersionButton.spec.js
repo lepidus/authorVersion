@@ -70,7 +70,9 @@ describe('Author Version - Create new version', function () {
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Create New Version")').click();
         
+        cy.waitJQuery();
         cy.get('button:contains("Create New Version")').should('not.exist');
+        
         cy.contains('All Versions').click();
         cy.get('.pkpPublication__versions button:contains("1")').click();
         cy.wait(1000);
