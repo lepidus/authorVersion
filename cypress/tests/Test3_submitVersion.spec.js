@@ -13,7 +13,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('label:contains("Justification")');
         cy.contains('Inform moderators and readers of the justification for creating this version. This justification will be made public on the preprint page.');
         cy.get('input[name="versionJustification"]').clear().type(firstVersionJustification, {delay: 0});
-        cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
+        cy.get('#submitVersionModal button:contains("Submit")').click();
     });
     it('Moderator views version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
@@ -71,7 +71,7 @@ describe('Author Version - Submit new version', function () {
 
         cy.get('button:contains("Submit New Version")').click();
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
-        cy.get('div[modalname="submitVersion"] button:contains("Submit")').click();
+        cy.get('#submitVersionModal button:contains("Submit")').click();
         
         cy.waitJQuery();
         cy.get('button:contains("Version justification")').click();
