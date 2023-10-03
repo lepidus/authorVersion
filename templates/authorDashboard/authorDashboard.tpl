@@ -126,7 +126,7 @@
 							{/if}
 							<template slot="actions">
 								<pkp-button
-									v-if="publicationList[publicationList.length - 1].relationStatus != {$smarty.const.PUBLICATION_RELATION_PUBLISHED} && canCreateNewVersion"
+									v-if="workingPublication.relationStatus != {$smarty.const.PUBLICATION_RELATION_PUBLISHED} && canCreateNewVersion"
 									ref="createVersion"
 									@click="createVersion"
 								>
