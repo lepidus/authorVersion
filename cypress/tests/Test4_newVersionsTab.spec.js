@@ -75,8 +75,9 @@ describe('Author Version - New versions tab', function () {
         cy.contains('Submission for testing Author Version plugin');
         cy.get('.listPanel__item--submission:visible').should('have.length', 1);
 
-        cy.get('.listPanel__header button:contains("Filters")').click();
-        cy.get('.pkpFilter button:contains("Non-submitted")').click();
+        cy.get('button:visible:contains("Filters")').click();
+        cy.get('button:contains("Non-submitted")').click();
+        cy.waitJQuery();
 
         cy.contains('Rossi');
         cy.contains(submissionData.title);
