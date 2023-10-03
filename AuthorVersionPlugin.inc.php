@@ -255,7 +255,7 @@ class AuthorVersionPlugin extends GenericPlugin
             [
                 'apiUrl' => $apiUrl,
                 'getParams' => [
-                    'newVersionSubmitted' => true,
+                    'newVersion' => true,
                 ],
                 'lazyLoad' => true,
                 'includeIssuesFilter' => $includeIssuesFilter,
@@ -263,8 +263,16 @@ class AuthorVersionPlugin extends GenericPlugin
                 'includeActiveSectionFiltersOnly' => true,
             ]
         );
+        $panelConfig = $newVersionListPanel->getConfig();
+        $panelConfig['filters'][0]['filters'] = [
+            [
+                'param' => 'nonSubmitted',
+                'value' => true,
+                'title' => __('plugins.generic.authorVersion.nonSubmittedVersions'),
+            ]
+        ];
 
-        $lists[$newVersionListPanel->id] = $newVersionListPanel->getConfig();
+        $lists[$newVersionListPanel->id] = $panelConfig;
         $templateMgr->setState(['components' => $lists]);
 
         $templateMgr->registerFilter("output", array($this, 'newVersionSubmissionTabFilter'));
@@ -292,7 +300,7 @@ class AuthorVersionPlugin extends GenericPlugin
         $submissionQB = & $args[0];
         $requestArgs = $args[1];
 
-        if (empty($requestArgs['newVersionSubmitted'])) {
+        if (empty($requestArgs['newVersion'])) {
             return;
         }
 
@@ -308,7 +316,7 @@ class AuthorVersionPlugin extends GenericPlugin
             ->filterByOverdue($requestArgs['isOverdue'])
             ->filterByDaysInactive($requestArgs['daysInactive'])
             ->filterByCategories(isset($requestArgs['categoryIds']) ? $requestArgs['categoryIds'] : null)
-            ->filterByNewVersion($requestArgs['newVersionSubmitted'])
+            ->filterByNewVersion($requestArgs['newVersion'], isset($requestArgs['nonSubmitted']) ? $requestArgs['nonSubmitted'] : false)
             ->searchPhrase($requestArgs['searchPhrase']);
 
         if (isset($requestArgs['count'])) {
