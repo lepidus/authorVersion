@@ -69,12 +69,10 @@ describe('Author Version - Create new version', function () {
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Create New Version")').click();
-    });
-    it('Button to create new version should not appear until new version is posted', function() {
-        cy.login('zwoods', null, 'publicknowledge');
-        cy.get('#archive-button').click();
-        cy.contains('View Woods').click({force: true});
-
+        
+        cy.waitJQuery();
+        cy.get('button:contains("Create New Version")').should('not.exist');
+        
         cy.contains('All Versions').click();
         cy.get('.pkpPublication__versions button:contains("1")').click();
         cy.wait(1000);
