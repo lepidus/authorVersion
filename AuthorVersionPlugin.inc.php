@@ -91,8 +91,16 @@ class AuthorVersionPlugin extends GenericPlugin
     {
         $templateMgr = & $params[1];
         $request = PKPApplication::get()->getRequest();
+        $requestedPage = $templateMgr->getTemplateVars('requestedPage');
 
-        $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
+        if($requestedPage == 'authorDashboard') {
+            $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
+        }
+
+        if($requestedPage == 'workflow') {
+            $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
+            $templateMgr->registerFilter("output", array($this, 'addDeleteVersionButtonFilter'));
+        }
 
         return false;
     }
@@ -106,6 +114,21 @@ class AuthorVersionPlugin extends GenericPlugin
 
             $output = substr_replace($output, $versionJustificationButton, $posRelationsBeginning, 0);
             $templateMgr->unregisterFilter('output', array($this, 'addVersionJustificationButtonFilter'));
+        }
+        return $output;
+    }
+
+    public function addDeleteVersionButtonFilter($output, $templateMgr)
+    {
+        $pattern = '/<template slot="actions">/';
+        if (preg_match_all($pattern, $output, $matches, PREG_OFFSET_CAPTURE)) {
+            $posPubActionsBeginning = $matches[0][1][1];
+            $patternLength = strlen($pattern);
+
+            $deleteVersionButton = $templateMgr->fetch($this->getTemplateResource('deleteVersionButton.tpl'));
+
+            $output = substr_replace($output, $deleteVersionButton, $posPubActionsBeginning + $patternLength, 0);
+            $templateMgr->unregisterFilter('output', array($this, 'addDeleteVersionButtonFilter'));
         }
         return $output;
     }

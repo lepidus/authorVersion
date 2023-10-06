@@ -3,7 +3,7 @@
 use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldHTML;
 
-define('FORM_DELETE_VERSION', 'deleteVersion');
+define('FORM_DELETE_VERSION', 'deleteVersionForm');
 
 class DeleteVersionForm extends FormComponent
 {
