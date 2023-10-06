@@ -20,7 +20,7 @@ describe('Author Version - Submission relations updating', function () {
         cy.get('.pkpWorkflow__relateForm input[name="vorDoi"]').clear().type(publishedArticleDoi, {delay: 0});
         cy.get('.pkpWorkflow__relateForm button:contains("Save")').click();
 
-        cy.reload();
+        cy.waitJQuery();
         cy.get('button:contains("Relations")').should('not.exist');
         cy.get('button:contains("Create New Version")').should('not.exist');
     });
