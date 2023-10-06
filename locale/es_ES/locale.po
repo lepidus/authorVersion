@@ -41,3 +41,6 @@ msgstr "Envíos con nueva versión"
 
 msgid "plugins.generic.authorVersion.nonSubmittedVersions"
 msgstr "No enviadas"
+
+msgid "plugins.generic.authorVersion.deleteVersion.confirmation"
+msgstr "¿Estás seguro de que deseas eliminar esta versión?"

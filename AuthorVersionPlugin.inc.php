@@ -117,11 +117,13 @@ class AuthorVersionPlugin extends GenericPlugin
         $request = Application::get()->getRequest();
 
         if ($template == 'authorDashboard/authorDashboard.tpl') {
-            $this->addSubmitVersionForm($templateMgr, $request);
+            $this->addFormComponent($templateMgr, $request, 'SubmitVersionForm', 'submitVersion');
+            $this->addFormComponent($templateMgr, $request, 'VersionJustificationForm', 'versionJustification');
         }
 
-        if ($template == 'authorDashboard/authorDashboard.tpl' or $template == 'workflow/workflow.tpl') {
-            $this->addVersionJustificationForm($templateMgr, $request);
+        if ($template == 'workflow/workflow.tpl') {
+            $this->addFormComponent($templateMgr, $request, 'VersionJustificationForm', 'versionJustification');
+            $this->addFormComponent($templateMgr, $request, 'DeleteVersionForm', 'deleteVersion');
         }
 
         $templateMgr->addStyleSheet(
@@ -133,34 +135,17 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
-    private function addSubmitVersionForm($templateMgr, $request)
+    private function addFormComponent($templateMgr, $request, $formName, $actionOp)
     {
         $context = $request->getContext();
         $submission = $templateMgr->get_template_vars('submission');
 
-        $this->import('classes.components.forms.SubmitVersionForm');
-        $submitVersionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/submitVersion', null, null, ['submissionId' => $submission->getId()]);
-        $submitVersionForm = new SubmitVersionForm($submitVersionUrl);
+        $this->import("classes.components.forms.$formName");
+        $actionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), "authorVersion/$actionOp", null, null, ['submissionId' => $submission->getId()]);
+        $formComponent = new $formName($actionUrl, $submission);
 
         $workflowComponents = $templateMgr->getState('components');
-        $workflowComponents[$submitVersionForm->id] = $submitVersionForm->getConfig();
-
-        $templateMgr->setState([
-            'components' => $workflowComponents
-        ]);
-    }
-
-    private function addVersionJustificationForm($templateMgr, $request)
-    {
-        $context = $request->getContext();
-        $submission = $templateMgr->get_template_vars('submission');
-
-        $this->import('classes.components.forms.VersionJustificationForm');
-        $updateJustificationUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), 'authorVersion/versionJustification', null, null, ['submissionId' => $submission->getId()]);
-        $versionJustificationForm = new VersionJustificationForm($updateJustificationUrl, $submission);
-
-        $workflowComponents = $templateMgr->getState('components');
-        $workflowComponents[$versionJustificationForm->id] = $versionJustificationForm->getConfig();
+        $workflowComponents[$formComponent->id] = $formComponent->getConfig();
 
         $templateMgr->setState([
             'components' => $workflowComponents
