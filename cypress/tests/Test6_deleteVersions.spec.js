@@ -81,16 +81,17 @@ describe('Author Version - Delete versions', function () {
 
         cy.get('button:contains("Delete version")');
         cy.get('.pkpHeader__actions button:contains("Post")').click();
-        cy.get('.pkp_modal_panel button:contains("Post")').click();
+        cy.get('.modal button:contains("Post")').click();
         cy.waitJQuery();
 
         cy.get('button:contains("Delete version")').should('not.exist');
         cy.get('button:contains("Unpost")').click();
+        cy.get('.modal button:contains("Unpost")').click();
         cy.waitJQuery();
         
         cy.get('button:contains("Delete version")').should('not.exist');
         cy.get('.pkpHeader__actions button:contains("Post")').click();
-        cy.get('.pkp_modal_panel button:contains("Post")').click();
+        cy.get('.modal button:contains("Post")').click();
     });
     it('Author - Creates new version without submitting', function () {
         cy.login('fpaglieri', null, 'publicknowledge');
@@ -107,7 +108,7 @@ describe('Author Version - Delete versions', function () {
 		
         cy.get('#publication-button').click();
         cy.get('button:contains("Delete version")').click();
-        cy.get('.pkp_modal_panel button:contains("Delete")').click();
+        cy.get('.modal button:contains("Delete")').click();
         cy.waitJQuery();
 
         cy.get('.pkpPublication__version').contains('2');

@@ -1,5 +1,5 @@
 <pkp-button
-    v-if="workingPublication.id === latestPublicationId && !workingPublication.datePublished"
+    v-if="workingPublication.id === latestPublicationId && !workingPublication.datePublished && workingPublication.version > 1"
     ref="deleteVersionButton"
     :is-warnable="true"
     @click="$modal.show('deleteVersion')"
