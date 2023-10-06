@@ -40,3 +40,9 @@ msgstr "Submissões com nova versão"
 
 msgid "plugins.generic.authorVersion.nonSubmittedVersions"
 msgstr "Não submetidas"
+
+msgid "plugins.generic.authorVersion.deleteVersion"
+msgstr "Excluir versão"
+
+msgid "plugins.generic.authorVersion.deleteVersion.confirmation"
+msgstr "Você tem certeza de que deseja excluir esta versão?"

@@ -17,6 +17,11 @@ class AuthorVersionHandler extends APIHandler
                     'roles' => $roles
                 ),
                 array(
+                    'pattern' => $this->getEndpointPattern() . '/deleteVersion',
+                    'handler' => array($this, 'deleteVersion'),
+                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
+                ),
+                array(
                     'pattern' => $this->getEndpointPattern() . '/versionJustification',
                     'handler' => array($this, 'updateVersionJustification'),
                     'roles' => $roles
@@ -58,6 +63,20 @@ class AuthorVersionHandler extends APIHandler
         $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
 
         $this->sendSubmittedVersionEmail($publication, $versionJustification);
+
+        return $response->withStatus(200);
+    }
+
+    public function deleteVersion($slimRequest, $response, $args)
+    {
+        $submission = $this->getSubmission($slimRequest);
+        $publication = $submission->getLatestPublication();
+
+        if(!is_null($publication->getData('datePublished')) or $publication->getData('version') == 1) {
+            return $response->withStatus(400);
+        }
+
+        Services::get('publication')->delete($publication);
 
         return $response->withStatus(200);
     }

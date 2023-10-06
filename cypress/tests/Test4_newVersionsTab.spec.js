@@ -61,7 +61,7 @@ describe('Author Version - New versions tab', function () {
 		cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
     });
-    it('Button to create new version', function () {
+    it('Author creates new version', function () {
         cy.login('rrossi', null, 'publicknowledge');
         cy.get('#archive-button').click();
         cy.contains('View Rossi').click({force: true});
