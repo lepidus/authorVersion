@@ -72,7 +72,7 @@ describe('Author Version - Delete versions', function () {
         cy.get('input[name="versionJustification"]').clear().type('Valid reason to submit a version', {delay: 0});
         cy.get('#submitVersionModal button:contains("Submit")').click();
     });
-    it("Moderator - Checks can delete only versions never posted", function () {
+    it("Moderator - Checks can delete last version if it isn't posted", function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('#newVersion-button').click();
         cy.contains('View Paglieri').click({force: true});
@@ -89,7 +89,7 @@ describe('Author Version - Delete versions', function () {
         cy.get('.modal button:contains("Unpost")').click();
         cy.waitJQuery();
         
-        cy.get('button:contains("Delete version")').should('not.exist');
+        cy.get('button:contains("Delete version")');
         cy.get('.pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
     });
