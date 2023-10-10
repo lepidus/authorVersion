@@ -72,7 +72,7 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if(!is_null($publication->getData('datePublished')) or $publication->getData('version') == 1) {
+        if($publication->getData('datePublished') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
