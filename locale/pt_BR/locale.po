@@ -46,3 +46,9 @@ msgstr "Excluir versão"
 
 msgid "plugins.generic.authorVersion.deleteVersion.confirmation"
 msgstr "Você tem certeza de que deseja excluir esta versão?"
+
+msgid "plugins.generic.authorVersion.deleteVersion.justification"
+msgstr "Justificativa para exclusão"
+
+msgid "plugins.generic.authorVersion.deleteVersion.justification.description"
+msgstr "Informe uma justificativa para a exclusão dessa versão. Essa justificativa será enviado para o(a) autor(a)."

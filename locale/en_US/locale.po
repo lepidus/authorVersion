@@ -46,3 +46,9 @@ msgstr "Delete version"
 
 msgid "plugins.generic.authorVersion.deleteVersion.confirmation"
 msgstr "Are you sure you want to delete this version?"
+
+msgid "plugins.generic.authorVersion.deleteVersion.justification"
+msgstr "Justification for deleting"
+
+msgid "plugins.generic.authorVersion.deleteVersion.justification.description"
+msgstr "Provide a justification for deleting this version. This justification will be sent to the author."

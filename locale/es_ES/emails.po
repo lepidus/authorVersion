@@ -12,3 +12,19 @@ msgstr ""
 msgid "emails.submittedVersion.description"
 msgstr ""
 "Plantilla de correo electrónico utilizada para notificar a los moderadores que una versión de un preprint está lista para publicarse"
+
+
+msgid "emails.deletedVersion.subject"
+msgstr "Versión de preprint eliminada"
+
+msgid "emails.deletedVersion.body"
+msgstr ""
+"La última versión de lo preprint \"{$submissionTitle}\" fue eliminada por moderación.<br>\n"
+"<br>\n"
+"Justificación: \"{$deletingJustification}\"<br>\n"
+"<br>\n"
+"<a href=\"{$linkToSubmission}\">Enlace al preprint</a>"
+
+msgid "emails.deletedVersion.description"
+msgstr ""
+"Plantilla de correo electrónico utilizada para notificar a los autores que una versión de un preprint fue eliminada"

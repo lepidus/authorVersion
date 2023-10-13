@@ -13,4 +13,5 @@
 
 <emails>
     <email key="SUBMITTED_VERSION_NOTIFICATION" can_edit="1" can_disable="0" subject="emails.submittedVersion.subject" description="emails.submittedVersion.description" body="emails.submittedVersion.body" />
+    <email key="DELETED_VERSION_NOTIFICATION" can_edit="1" can_disable="0" subject="emails.deletedVersion.subject" description="emails.deletedVersion.description" body="emails.deletedVersion.body" />
 </emails>

@@ -108,6 +108,12 @@ describe('Author Version - Delete versions', function () {
 		
         cy.get('#publication-button').click();
         cy.get('button:contains("Delete version")').click();
+        
+        cy.contains('Are you sure you want to delete this version?');
+        cy.contains('label', 'Justification for deleting');
+        cy.contains('Provide a justification for deleting this version. This justification will be sent to the author.');
+        cy.get('input[name="deletingJustification"]').clear().type('This version should not have been created', {delay: 0});
+
         cy.get('.modal button:contains("Delete")').click();
         cy.waitJQuery();
 
