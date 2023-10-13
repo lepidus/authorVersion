@@ -74,13 +74,11 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if(!is_null($publication->getData('versionJustification'))
-            || $publication->getData('status') == STATUS_PUBLISHED
-            || $publication->getData('version') == 1
-        ) {
+        if($publication->getData('status') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
+        $this->sendDeletedVersionEmail($publication, $deletingJustification);
         Services::get('publication')->delete($publication);
 
         return $response->withStatus(200);
@@ -117,6 +115,26 @@ class AuthorVersionHandler extends APIHandler
         ];
 
         $this->sendEmailTemplate($emailTemplate, $managers, $params);
+    }
+
+    private function sendDeletedVersionEmail($publication, $deletingJustification)
+    {
+        $request = $this->getRequest();
+        $context = $request->getContext();
+
+        $emailTemplate = 'DELETED_VERSION_NOTIFICATION';
+        $primaryAuthor = $publication->getPrimaryAuthor();
+        $recipients = [
+            ['email' => $primaryAuthor->getData('email'), 'name' => $primaryAuthor->getFullName()]
+        ];
+
+        $params = [
+            'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
+            'linkToSubmission' => $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'authorDashboard', 'submission', $publication->getData('submissionId')),
+            'deletingJustification' => $deletingJustification
+        ];
+
+        $this->sendEmailTemplate($emailTemplate, $recipients, $params);
     }
 
     private function sendEmailTemplate(string $templateName, array $recipients, array $params)

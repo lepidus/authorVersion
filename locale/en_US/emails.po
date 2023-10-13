@@ -12,3 +12,19 @@ msgstr ""
 msgid "emails.submittedVersion.description"
 msgstr ""
 "Email template used to notify moderators a preprint version is ready to be posted"
+
+
+msgid "emails.deletedVersion.subject"
+msgstr "Preprint version deleted"
+
+msgid "emails.deletedVersion.body"
+msgstr ""
+"The latest version of the preprint \"{$submissionTitle}\" has been deleted by the moderation.<br>\n"
+"<br>\n"
+"Justification: \"{$deletingJustification}\"<br>\n"
+"<br>\n"
+"<a href=\"{$linkToSubmission}\">Link to preprint</a>"
+
+msgid "emails.deletedVersion.description"
+msgstr ""
+"Email template used to notify authors a preprint version has been deleted"
