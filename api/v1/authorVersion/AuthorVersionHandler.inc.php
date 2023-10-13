@@ -69,10 +69,15 @@ class AuthorVersionHandler extends APIHandler
 
     public function deleteVersion($slimRequest, $response, $args)
     {
+        $requestParams = $slimRequest->getParsedBody();
+        $deletingJustification = $requestParams['deletingJustification'];
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
+        if(!is_null($publication->getData('versionJustification'))
+            || $publication->getData('status') == STATUS_PUBLISHED
+            || $publication->getData('version') == 1
+        ) {
             return $response->withStatus(400);
         }
 
@@ -103,21 +108,30 @@ class AuthorVersionHandler extends APIHandler
         $request = $this->getRequest();
         $context = $request->getContext();
 
-        $email = new MailTemplate('SUBMITTED_VERSION_NOTIFICATION', null, $context, false);
+        $emailTemplate = 'SUBMITTED_VERSION_NOTIFICATION';
+        $managers = $this->getManagersAssigned($publication);
+        $params = [
+            'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
+            'linkToSubmission' => $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId')),
+            'versionJustification' => $versionJustification
+        ];
+
+        $this->sendEmailTemplate($emailTemplate, $managers, $params);
+    }
+
+    private function sendEmailTemplate(string $templateName, array $recipients, array $params)
+    {
+        $request = $this->getRequest();
+        $context = $request->getContext();
+
+        $email = new MailTemplate($templateName, null, $context, false);
         $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
 
-        $managers = $this->getManagersAssigned($publication);
-        foreach ($managers as $manager) {
-            $email->addRecipient($manager->getEmail(), $manager->getFullName());
+        foreach($recipients as $recipient) {
+            $email->addRecipient($recipient['email'], $recipient['name']);
         }
 
-        $submissionUrl = $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId'));
-
-        $email->sendWithParams([
-            'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
-            'linkToSubmission' => $submissionUrl,
-            'versionJustification' => $versionJustification
-        ]);
+        $email->sendWithParams($params);
     }
 
     private function getSubmission($slimRequest)
@@ -140,7 +154,11 @@ class AuthorVersionHandler extends APIHandler
             $userId = $assignment->getUserId();
 
             if($this->userIsManager($userId)) {
-                $managers[] = $userDao->getById($userId);
+                $manager = $userDao->getById($userId);
+                $managers[] = [
+                    'email' => $manager->getEmail(),
+                    'name' => $manager->getFullName()
+                ];
             }
         }
 
