@@ -1,42 +1,42 @@
 <?php
 
-import('lib.pkp.classes.handler.APIHandler');
-import('lib.pkp.classes.mail.MailTemplate');
+use PKP\handler\APIHandler;
+use PKP\security\Role;
+use PKP\security\authorization\PolicySet;
+use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
 
 class AuthorVersionHandler extends APIHandler
 {
     public function __construct()
     {
         $this->_handlerPath = 'authorVersion';
-        $roles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_AUTHOR];
-        $this->_endpoints = array(
-            'POST' => array(
-                array(
+        $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
+        $this->_endpoints = [
+            'POST' => [
+                [
                     'pattern' => $this->getEndpointPattern() . '/submitVersion',
-                    'handler' => array($this, 'submitVersion'),
+                    'handler' => [$this, 'submitVersion'],
                     'roles' => $roles
-                ),
-                array(
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/deleteVersion',
-                    'handler' => array($this, 'deleteVersion'),
-                    'roles' => [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR]
-                ),
-                array(
+                    'handler' => [$this, 'deleteVersion'],
+                    'roles' => [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR]
+                ],
+                [
                     'pattern' => $this->getEndpointPattern() . '/versionJustification',
-                    'handler' => array($this, 'updateVersionJustification'),
+                    'handler' => [$this, 'updateVersionJustification'],
                     'roles' => $roles
-                ),
-            ),
-        );
+                ],
+            ],
+        ];
         parent::__construct();
     }
 
     public function authorize($request, &$args, $roleAssignments)
     {
-        import('lib.pkp.classes.security.authorization.PolicySet');
-        $rolePolicy = new PolicySet(COMBINING_PERMIT_OVERRIDES);
+        $rolePolicy = new PolicySet(PolicySet::COMBINING_PERMIT_OVERRIDES);
 
-        import('lib.pkp.classes.security.authorization.RoleBasedHandlerOperationPolicy');
         foreach ($roleAssignments as $role => $operations) {
             $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
         }
