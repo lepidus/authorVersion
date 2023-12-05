@@ -19,7 +19,6 @@ use APP\core\Application;
 use PKP\plugins\Hook;
 use APP\facades\Repo;
 use PKP\security\Role;
-use APP\plugins\generic\authorVersion\components\forms;
 use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
 
 class AuthorVersionPlugin extends GenericPlugin
@@ -33,7 +32,7 @@ class AuthorVersionPlugin extends GenericPlugin
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
-            Hook::add('TemplateResource::getFilename', [$this, '_overridePluginTemplates']); // Para sobrescrever templates
+            //Hook::add('TemplateResource::getFilename', [$this, '_overridePluginTemplates']); // Para sobrescrever templates
             Hook::add('Template::Workflow', [$this, 'addWorkflowModifications']);
             Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
             Hook::add('Publication::canAuthorPublish', [$this, 'setAuthorCanPublishVersion']);
@@ -41,8 +40,8 @@ class AuthorVersionPlugin extends GenericPlugin
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             Hook::add('Publication::version', [$this, 'preventsDuplicationOfVersionJustification']);
             Hook::add('Templates::Preprint::Details', [$this, 'showVersionJustificationOnPreprintDetails']);
-            Hook::add('TemplateManager::display', [$this, 'addNewVersionSubmissionTab']);
-            Hook::add('Submission::getMany::queryBuilder', [$this, 'modifySubmissionQueryBuilder']);
+            // Hook::add('TemplateManager::display', [$this, 'addNewVersionSubmissionTab']);
+            // Hook::add('Submission::getMany::queryBuilder', [$this, 'modifySubmissionQueryBuilder']);
         }
 
         return $success;
@@ -165,7 +164,8 @@ class AuthorVersionPlugin extends GenericPlugin
     private function addFormComponent($templateMgr, $request, $formName, $actionOp)
     {
         $context = $request->getContext();
-        $submission = $templateMgr->get_template_vars('submission');
+        $submission = $templateMgr->getTemplateVars('submission');
+        $formName = 'APP\plugins\generic\authorVersion\classes\components\forms\\' . $formName;
 
         $actionUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), "authorVersion/$actionOp", null, null, ['submissionId' => $submission->getId()]);
         $formComponent = new $formName($actionUrl, $submission);
@@ -178,9 +178,11 @@ class AuthorVersionPlugin extends GenericPlugin
         ]);
     }
 
-    public function setupAuthorVersionHandler($hookName, $request)
+    public function setupAuthorVersionHandler($hookName, $params)
     {
+        $request = $params[0];
         $router = $request->getRouter();
+
         if (!($router instanceof \PKP\core\APIRouter)) {
             return;
         }
@@ -203,7 +205,7 @@ class AuthorVersionPlugin extends GenericPlugin
         $templateMgr = $params[1];
         $output = &$params[2];
 
-        $publication = $templateMgr->get_template_vars('publication');
+        $publication = $templateMgr->getTemplateVars('publication');
 
         $version = $publication->getData('version');
         $versionJustification = $publication->getData('versionJustification');
@@ -216,7 +218,7 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
-    public function addNewVersionSubmissionTab($hookName, $params)
+    /*public function addNewVersionSubmissionTab($hookName, $params)
     {
         $templateMgr = $params[0];
         $template = $params[1];
@@ -231,7 +233,7 @@ class AuthorVersionPlugin extends GenericPlugin
         $apiUrl = $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), '_submissions');
 
         $lists = $templateMgr->getState('components');
-        $userRoles = $templateMgr->get_template_vars('userRoles');
+        $userRoles = $templateMgr->getTemplateVars('userRoles');
 
         $includeAssignedEditorsFilter = array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles);
         $includeIssuesFilter = array_intersect(
@@ -316,5 +318,5 @@ class AuthorVersionPlugin extends GenericPlugin
         if (isset($requestArgs['offset'])) {
             $submissionQB->offsetBy($requestArgs['count']);
         }
-    }
+    }*/
 }
