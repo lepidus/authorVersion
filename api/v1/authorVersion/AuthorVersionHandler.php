@@ -1,5 +1,7 @@
 <?php
 
+namespace APP\plugins\generic\authorsVersion\API\v1\authorVersion;
+
 use PKP\handler\APIHandler;
 use PKP\security\Role;
 use PKP\security\authorization\PolicySet;

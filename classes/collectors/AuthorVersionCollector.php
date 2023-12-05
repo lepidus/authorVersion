@@ -1,8 +1,11 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+namespace APP\plugins\generic\authorsVersion\collectors;
 
-class AuthorVersionQueryBuilder extends \APP\Services\QueryBuilders\SubmissionQueryBuilder
+use Illuminate\Database\Capsule\Manager as Capsule;
+use PKP\submission\PKPSubmission;
+
+class AuthorVersionCollector extends APP\submission\Collector
 {
     protected $newVersion = false;
     protected $submittedVersion = false;
@@ -15,12 +18,14 @@ class AuthorVersionQueryBuilder extends \APP\Services\QueryBuilders\SubmissionQu
         return $this;
     }
 
-    public function appGet($q)
+    public function getQueryBuilder(): Builder
     {
+        $q = parent::getQueryBuilder();
+
         if ($this->newVersion) {
             $q->leftJoin('publications as nvp', 'nvp.submission_id', '=', 's.submission_id')
                 ->where('nvp.version', '>', 1)
-                ->where('nvp.status', '!=', STATUS_PUBLISHED);
+                ->where('nvp.status', '!=', PKPSubmission::STATUS_PUBLISHED);
 
             $submittedVersionSubQuery = function ($query) {
                 $query->select('publication_id')
