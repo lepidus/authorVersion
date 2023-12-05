@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\authorsVersion\components\forms;
+namespace APP\plugins\generic\authorVersion\components\forms;
 
 use PKP\components\forms\FormComponent;
 use PKP\components\forms\FieldText;

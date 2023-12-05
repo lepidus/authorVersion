@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\authorsVersion\API\v1\authorVersion;
+namespace APP\plugins\generic\authorVersion\API\v1\authorVersion;
 
 use PKP\handler\APIHandler;
 use PKP\security\Role;

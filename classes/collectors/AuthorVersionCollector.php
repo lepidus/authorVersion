@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\authorsVersion\collectors;
+namespace APP\plugins\generic\authorVersion\collectors;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use PKP\submission\PKPSubmission;
