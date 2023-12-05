@@ -4,6 +4,12 @@ use PKP\handler\APIHandler;
 use PKP\security\Role;
 use PKP\security\authorization\PolicySet;
 use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\submission\PKPSubmission;
+use PKP\db\DAORegistry;
+use APP\facades\Repo;
+use APP\core\Application;
+use Illuminate\Support\Facades\Mail;
+use PKP\mail\Mailable;
 
 class AuthorVersionHandler extends APIHandler
 {
@@ -53,14 +59,13 @@ class AuthorVersionHandler extends APIHandler
         $publication = $submission->getLatestPublication();
 
         if(!is_null($publication->getData('versionJustification'))
-            || $publication->getData('status') == STATUS_PUBLISHED
+            || $publication->getData('status') == PKPSubmission::STATUS_PUBLISHED
             || $publication->getData('version') == 1
         ) {
             return $response->withStatus(400);
         }
 
-        $publicationService = Services::get('publication');
-        $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
+        Repo::publication()->edit($publication, ['versionJustification' => $versionJustification]);
 
         $this->sendSubmittedVersionEmail($publication, $versionJustification);
 
@@ -74,12 +79,12 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
+        if($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED or $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
         $this->sendDeletedVersionEmail($publication, $deletingJustification);
-        Services::get('publication')->delete($publication);
+        Repo::publication()->delete($publication);
 
         return $response->withStatus(200);
     }
@@ -91,12 +96,11 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == STATUS_PUBLISHED || $publication->getData('version') == 1) {
+        if($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED || $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
-        $publicationService = Services::get('publication');
-        $publicationService->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
+        Repo::publication()->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
 
         return $response->withStatus(200);
     }
@@ -106,15 +110,15 @@ class AuthorVersionHandler extends APIHandler
         $request = $this->getRequest();
         $context = $request->getContext();
 
-        $emailTemplate = 'SUBMITTED_VERSION_NOTIFICATION';
+        $emailTemplateKey = 'SUBMITTED_VERSION_NOTIFICATION';
         $managers = $this->getManagersAssigned($publication);
         $params = [
             'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
-            'linkToSubmission' => $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId')),
+            'linkToSubmission' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId')),
             'versionJustification' => $versionJustification
         ];
 
-        $this->sendEmailTemplate($emailTemplate, $managers, $params);
+        $this->sendEmailTemplate($emailTemplateKey, $managers, $params);
     }
 
     private function sendDeletedVersionEmail($publication, $deletingJustification)
@@ -122,7 +126,7 @@ class AuthorVersionHandler extends APIHandler
         $request = $this->getRequest();
         $context = $request->getContext();
 
-        $emailTemplate = 'DELETED_VERSION_NOTIFICATION';
+        $emailTemplateKey = 'DELETED_VERSION_NOTIFICATION';
         $primaryAuthor = $publication->getPrimaryAuthor();
         $recipients = [
             ['email' => $primaryAuthor->getData('email'), 'name' => $primaryAuthor->getFullName()]
@@ -130,26 +134,30 @@ class AuthorVersionHandler extends APIHandler
 
         $params = [
             'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
-            'linkToSubmission' => $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'authorDashboard', 'submission', $publication->getData('submissionId')),
+            'linkToSubmission' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'authorDashboard', 'submission', $publication->getData('submissionId')),
             'deletingJustification' => $deletingJustification
         ];
 
-        $this->sendEmailTemplate($emailTemplate, $recipients, $params);
+        $this->sendEmailTemplate($emailTemplateKey, $recipients, $params);
     }
 
-    private function sendEmailTemplate(string $templateName, array $recipients, array $params)
+    private function sendEmailFromTemplate(string $templateKey, array $recipients, array $params)
     {
         $request = $this->getRequest();
         $context = $request->getContext();
 
-        $email = new MailTemplate($templateName, null, $context, false);
-        $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
+        $emailTemplate = Repo::emailTemplate()->getByKey(
+            $context->getId(),
+            $templateKey
+        );
 
-        foreach($recipients as $recipient) {
-            $email->addRecipient($recipient['email'], $recipient['name']);
-        }
+        $email = new Mailable($params);
+        $email->from($context->getData('contactEmail'), $context->getData('contactName'));
+        $email->to($recipients);
+        $email->subject($emailTemplate->getSubject());
+        $email->body($emailTemplate->getBody());
 
-        $email->sendWithParams($params);
+        Mail::send($email);
     }
 
     private function getSubmission($slimRequest)
@@ -157,14 +165,12 @@ class AuthorVersionHandler extends APIHandler
         $queryParams = $slimRequest->getQueryParams();
         $submissionId = (int) $queryParams['submissionId'];
 
-        $submissionService = Services::get('submission');
-        return $submissionService->get($submissionId);
+        return Repo::submission()->get($submissionId);
     }
 
     private function getManagersAssigned($publication): array
     {
         $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
-        $userDao = DAORegistry::getDAO('UserDAO');
         $allAssignments = $stageAssignmentDao->getBySubmissionAndStageId($publication->getData('submissionId'), WORKFLOW_STAGE_ID_PRODUCTION);
         $managers = array();
 
@@ -172,7 +178,7 @@ class AuthorVersionHandler extends APIHandler
             $userId = $assignment->getUserId();
 
             if($this->userIsManager($userId)) {
-                $manager = $userDao->getById($userId);
+                $manager = Repo::user()->get($userId);
                 $managers[] = [
                     'email' => $manager->getEmail(),
                     'name' => $manager->getFullName()
@@ -185,11 +191,12 @@ class AuthorVersionHandler extends APIHandler
 
     private function userIsManager($userId): bool
     {
-        $userGroupDao = DAORegistry::getDAO('UserGroupDAO');
-        $userGroupsOfUser = $userGroupDao->getByUserId($userId);
+        $userGroupsOfUser = Repo::userGroup()->getCollector()
+            ->filterByUserIds([$userId])
+            ->getMany();
         $managerGroupName = 'preprint server manager';
 
-        while($userGroup = $userGroupsOfUser->next()) {
+        foreach ($userGroupsOfUser as $userGroup) {
             if(strtolower($userGroup->getName('en_US')) == $managerGroupName) {
                 return true;
             }
