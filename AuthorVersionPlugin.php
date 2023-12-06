@@ -19,6 +19,7 @@ use APP\core\Application;
 use PKP\plugins\Hook;
 use APP\facades\Repo;
 use PKP\security\Role;
+use PKP\submission\PKPSubmission;
 use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
 
 class AuthorVersionPlugin extends GenericPlugin
@@ -40,8 +41,8 @@ class AuthorVersionPlugin extends GenericPlugin
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             Hook::add('Publication::version', [$this, 'preventsDuplicationOfVersionJustification']);
             Hook::add('Templates::Preprint::Details', [$this, 'showVersionJustificationOnPreprintDetails']);
-            // Hook::add('TemplateManager::display', [$this, 'addNewVersionSubmissionTab']);
-            // Hook::add('Submission::getMany::queryBuilder', [$this, 'modifySubmissionQueryBuilder']);
+            Hook::add('TemplateManager::display', [$this, 'addNewVersionSubmissionTab']);
+            Hook::add('Submission::Collector', [$this, 'modifySubmissionCollector']);
         }
 
         return $success;
@@ -218,7 +219,7 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
-    /*public function addNewVersionSubmissionTab($hookName, $params)
+    public function addNewVersionSubmissionTab($hookName, $params)
     {
         $templateMgr = $params[0];
         $template = $params[1];
@@ -287,36 +288,29 @@ class AuthorVersionPlugin extends GenericPlugin
         return $output;
     }
 
-    public function modifySubmissionQueryBuilder($hookName, $args)
+    public function modifySubmissionCollector($hookName, $params)
     {
-        $submissionQB = &$args[0];
-        $requestArgs = $args[1];
+        $query = &$params[0];
+        $request = Application::get()->getRequest();
 
-        if (empty($requestArgs['newVersion'])) {
-            return;
+        if ($request->getUserVar('newVersion')) {
+            $query->leftJoin('publications as nvp', 'nvp.submission_id', '=', 's.submission_id')
+                ->where('nvp.version', '>', 1)
+                ->where('nvp.status', '!=', PKPSubmission::STATUS_PUBLISHED);
+
+            $submittedVersionSubQuery = function ($query) {
+                $query->select('publication_id')
+                    ->from('publication_settings')
+                    ->where('setting_name', '=', 'versionJustification');
+            };
+
+            $filterSubmitted = !$request->getUserVar('nonSubmitted');
+
+            if ($filterSubmitted) {
+                $query->whereIn('nvp.publication_id', $submittedVersionSubQuery);
+            } else {
+                $query->whereNotIn('nvp.publication_id', $submittedVersionSubQuery);
+            }
         }
-
-        $this->import('classes.services.queryBuilders.AuthorVersionQueryBuilder');
-        $submissionQB = new AuthorVersionQueryBuilder();
-        $submissionQB
-            ->filterByContext($requestArgs['contextId'])
-            ->orderBy($requestArgs['orderBy'], $requestArgs['orderDirection'])
-            ->assignedTo($requestArgs['assignedTo'])
-            ->filterByStatus($requestArgs['status'])
-            ->filterByStageIds($requestArgs['stageIds'])
-            ->filterByIncomplete($requestArgs['isIncomplete'])
-            ->filterByOverdue($requestArgs['isOverdue'])
-            ->filterByDaysInactive($requestArgs['daysInactive'])
-            ->filterByCategories(isset($requestArgs['categoryIds']) ? $requestArgs['categoryIds'] : null)
-            ->filterByNewVersion($requestArgs['newVersion'], isset($requestArgs['nonSubmitted']) ? $requestArgs['nonSubmitted'] : false)
-            ->searchPhrase($requestArgs['searchPhrase']);
-
-        if (isset($requestArgs['count'])) {
-            $submissionQB->limitTo($requestArgs['count']);
-        }
-
-        if (isset($requestArgs['offset'])) {
-            $submissionQB->offsetBy($requestArgs['count']);
-        }
-    }*/
+    }
 }
