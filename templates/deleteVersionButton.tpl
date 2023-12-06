@@ -7,15 +7,10 @@
     {translate key="plugins.generic.authorVersion.deleteVersion"}
 </pkp-button>
 <modal
-    v-bind="MODAL_PROPS"
     name="deleteVersion"
+    title="{translate key="plugins.generic.authorVersion.deleteVersion"}"
+    close-label="common.close"
     @closed="setFocusToRef('deleteVersionButton')"
 >
-    <modal-content
-        id="deleteVersionModal"
-        modal-name="deleteVersion"
-        title="{translate key="plugins.generic.authorVersion.deleteVersion"}"
-    >
-        <pkp-form v-bind="components.deleteVersionForm" @set="set" @success="location.reload()"></pkp-form>
-    </modal-content>
+    <pkp-form v-bind="components.deleteVersionForm" @set="set" @success="location.reload()"></pkp-form>
 </modal>
