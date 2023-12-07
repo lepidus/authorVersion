@@ -20,6 +20,7 @@ use PKP\plugins\Hook;
 use APP\facades\Repo;
 use PKP\security\Role;
 use PKP\submission\PKPSubmission;
+use APP\template\TemplateManager;
 use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
 
 class AuthorVersionPlugin extends GenericPlugin
@@ -33,7 +34,6 @@ class AuthorVersionPlugin extends GenericPlugin
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
-            //Hook::add('TemplateResource::getFilename', [$this, '_overridePluginTemplates']); // Para sobrescrever templates
             Hook::add('Template::Workflow', [$this, 'addWorkflowModifications']);
             Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
             Hook::add('Publication::canAuthorPublish', [$this, 'setAuthorCanPublishVersion']);
@@ -98,6 +98,8 @@ class AuthorVersionPlugin extends GenericPlugin
         $requestedPage = $templateMgr->getTemplateVars('requestedPage');
 
         if ($requestedPage == 'authorDashboard') {
+            $templateMgr->registerFilter("output", [$this, 'replaceRelationsButtonFilter']);
+            $templateMgr->registerFilter("output", [$this, 'addNewAuthorActionsFilter']);
             $templateMgr->registerFilter("output", [$this, 'addVersionJustificationButtonFilter']);
         }
 
@@ -109,9 +111,49 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
+    public function replaceRelationsButtonFilter($output, $templateMgr)
+    {
+        if (
+            preg_match('/<div[^>]+class="pkpWorkflow">/', $output)
+            && preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
+            $blockStartPosition = $matches[0][1];
+
+            preg_match('/<\/span>/', $output, $matches, PREG_OFFSET_CAPTURE, $blockStartPosition);
+            $blockEndPosition = $matches[0][1] + strlen('</span>');
+
+            $newRelationsButton = $templateMgr->fetch($this->getTemplateResource('relationsButton.tpl'));
+
+            $output = substr_replace($output, $newRelationsButton, $blockStartPosition, $blockEndPosition - $blockStartPosition);
+            $templateMgr->unregisterFilter('output', array($this, 'replaceRelationsButtonFilter'));
+        }
+
+        return $output;
+    }
+
+    public function addNewAuthorActionsFilter($output, $templateMgr)
+    {
+        if (
+            preg_match('/<div[^>]+class="pkpWorkflow">/', $output)
+            && preg_match_all('/<\/pkp-header>/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
+            $insertPosition = $matches[0][1][1];
+
+            $newAuthorActions = $templateMgr->fetch($this->getTemplateResource('newAuthorActions.tpl'));
+
+            $output = substr_replace($output, $newAuthorActions, $insertPosition, 0);
+            $templateMgr->unregisterFilter('output', array($this, 'addNewAuthorActionsFilter'));
+        }
+
+        return $output;
+    }
+
     public function addVersionJustificationButtonFilter($output, $templateMgr)
     {
-        if (preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+        if (
+            preg_match('/<div[^>]+class="pkpWorkflow">/', $output)
+            && preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
             $posRelationsBeginning = $matches[0][1];
 
             $versionJustificationButton = $templateMgr->fetch($this->getTemplateResource('versionJustificationWorkflow.tpl'));

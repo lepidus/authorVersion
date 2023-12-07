@@ -120,7 +120,7 @@ class AuthorVersionHandler extends APIHandler
             'versionJustification' => $versionJustification
         ];
 
-        $this->sendEmailTemplate($emailTemplateKey, $managers, $params);
+        $this->sendEmailFromTemplate($emailTemplateKey, $managers, $params);
     }
 
     private function sendDeletedVersionEmail($publication, $deletingJustification)
@@ -140,7 +140,7 @@ class AuthorVersionHandler extends APIHandler
             'deletingJustification' => $deletingJustification
         ];
 
-        $this->sendEmailTemplate($emailTemplateKey, $recipients, $params);
+        $this->sendEmailFromTemplate($emailTemplateKey, $recipients, $params);
     }
 
     private function sendEmailFromTemplate(string $templateKey, array $recipients, array $params)
