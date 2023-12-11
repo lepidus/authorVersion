@@ -67,7 +67,7 @@ describe('Author Version - Submit new version', function () {
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Create New Version")').click();
-        cy.wait(2000);
+        cy.waitJQuery();
 
         cy.get('button:contains("Submit New Version")').click();
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
