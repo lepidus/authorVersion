@@ -55,7 +55,7 @@ describe('Author Version - Create new version', function () {
         });
 
         cy.waitJQuery();
-		cy.contains('h2', 'Submission complete');
+		cy.contains('h1', 'Submission complete');
 		cy.contains('a', 'Review this submission').click();
 
         cy.get('button:contains("Post")').should('not.exist');

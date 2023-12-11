@@ -84,7 +84,6 @@ class AuthorVersionPlugin extends GenericPlugin
     public function preventsDuplicationOfVersionJustification($hookName, $params)
     {
         $newPublication = &$params[0];
-        $request = $params[2];
 
         $newPublication = Repo::publication()->edit($newPublication, ['versionJustification' => null]);
 
