@@ -21,14 +21,14 @@ describe('Author Version - Submit new version', function () {
         cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
         cy.get('button:contains("Version justification")').click();
-        cy.contains(firstVersionJustification);
+        cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
     });
     it('Author edits version justification on workflow', function () {
         cy.login('zwoods', null, 'publicknowledge');
         cy.get('#archive-button').click();
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Version justification")').click();
-        cy.contains(firstVersionJustification);
+        cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
 
         cy.get('input[name="versionJustification"]').clear().type(secondVersionJustification, {delay: 0});
         cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
@@ -39,7 +39,7 @@ describe('Author Version - Submit new version', function () {
         cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
         cy.get('button:contains("Version justification")').click();
-        cy.contains(secondVersionJustification);
+        cy.get('input[name="versionJustification"]').should('have.value', secondVersionJustification);
 
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
         cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
@@ -71,10 +71,10 @@ describe('Author Version - Submit new version', function () {
 
         cy.get('button:contains("Submit New Version")').click();
         cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
-        cy.get('#submitVersionModal button:contains("Submit")').click();
+        cy.get('form button:contains("Submit")').click();
         
         cy.waitJQuery();
         cy.get('button:contains("Version justification")').click();
-        cy.contains(finalVersionJustification);
+        cy.get('input[name="versionJustification"]').should('have.value', finalVersionJustification);
     });
 });

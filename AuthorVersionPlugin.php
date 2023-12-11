@@ -113,7 +113,7 @@ class AuthorVersionPlugin extends GenericPlugin
     public function replaceRelationsButtonFilter($output, $templateMgr)
     {
         if (
-            preg_match('/<div[^>]+class="pkpWorkflow">/', $output)
+            preg_match('/class="pkpWorkflow__header"/', $output)
             && preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)
         ) {
             $blockStartPosition = $matches[0][1];
@@ -133,7 +133,7 @@ class AuthorVersionPlugin extends GenericPlugin
     public function addNewAuthorActionsFilter($output, $templateMgr)
     {
         if (
-            preg_match('/<div[^>]+class="pkpWorkflow">/', $output)
+            preg_match('/class="pkpWorkflow__header"/', $output)
             && preg_match_all('/<\/pkp-header>/', $output, $matches, PREG_OFFSET_CAPTURE)
         ) {
             $insertPosition = $matches[0][1][1];
@@ -150,7 +150,7 @@ class AuthorVersionPlugin extends GenericPlugin
     public function addVersionJustificationButtonFilter($output, $templateMgr)
     {
         if (
-            preg_match('/<div[^>]+class="pkpWorkflow">/', $output)
+            preg_match('/class="pkpWorkflow__header"/', $output)
             && preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)
         ) {
             $posRelationsBeginning = $matches[0][1];
@@ -159,16 +159,19 @@ class AuthorVersionPlugin extends GenericPlugin
 
             $output = substr_replace($output, $versionJustificationButton, $posRelationsBeginning, 0);
             $templateMgr->unregisterFilter('output', array($this, 'addVersionJustificationButtonFilter'));
+            error_log("Tá rodando");
         }
         return $output;
     }
 
     public function addDeleteVersionButtonFilter($output, $templateMgr)
     {
-        $pattern = '/<template slot="actions">/';
-        if (preg_match_all($pattern, $output, $matches, PREG_OFFSET_CAPTURE)) {
+        if (
+            preg_match('/class="pkpWorkflow__header"/', $output)
+            && preg_match_all('/<template slot="actions">/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
             $posPubActionsBeginning = $matches[0][1][1];
-            $patternLength = strlen($pattern);
+            $patternLength = strlen('<template slot="actions">');
 
             $deleteVersionButton = $templateMgr->fetch($this->getTemplateResource('deleteVersionButton.tpl'));
 
