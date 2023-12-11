@@ -40,7 +40,7 @@ describe('Author Version - Delete versions', function () {
         cy.contains('button', 'Continue').click();
     }
 
-    /*it('Author - Creates new submission', function () {
+    it('Author - Creates new submission', function () {
         cy.login('fpaglieri', null, 'publicknowledge');
         cy.get('div#myQueue a:contains("New Submission")').click();
 
@@ -76,7 +76,7 @@ describe('Author Version - Delete versions', function () {
         cy.get('button:contains("Submit New Version")').click();
         cy.get('input[name="versionJustification"]').clear().type('Valid reason to submit a version', {delay: 0});
         cy.get('form button:contains("Submit")').click();
-    });*/
+    });
     it("Moderator - Checks can delete last version if it isn't posted", function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('#newVersion-button').click();

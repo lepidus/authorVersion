@@ -12,9 +12,9 @@ class SubmittedVersionNotification extends Mailable
 {
     use Configurable;
 
-    protected static string $name = 'emails.submittedVersion.name';
-    protected static string $description = 'emails.submittedVersion.description';
-    protected static string $emailTemplateKey = 'SUBMITTED_VERSION_NOTIFICATION';
+    protected static ?string $name = 'emails.submittedVersion.name';
+    protected static ?string $description = 'emails.submittedVersion.description';
+    protected static ?string $emailTemplateKey = 'SUBMITTED_VERSION_NOTIFICATION';
     protected static array $toRoleIds = [Role::ROLE_ID_MANAGER];
 
     public function __construct(Server $context, Submission $submission, array $variables)

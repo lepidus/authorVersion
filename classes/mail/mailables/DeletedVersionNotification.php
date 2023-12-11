@@ -12,9 +12,9 @@ class DeletedVersionNotification extends Mailable
 {
     use Configurable;
 
-    protected static string $name = 'emails.deletedVersion.name';
-    protected static string $description = 'emails.deletedVersion.description';
-    protected static string $emailTemplateKey = 'DELETED_VERSION_NOTIFICATION';
+    protected static ?string $name = 'emails.deletedVersion.name';
+    protected static ?string $description = 'emails.deletedVersion.description';
+    protected static ?string $emailTemplateKey = 'DELETED_VERSION_NOTIFICATION';
     protected static array $toRoleIds = [Role::ROLE_ID_AUTHOR];
 
     public function __construct(Server $context, Submission $submission, array $variables)
