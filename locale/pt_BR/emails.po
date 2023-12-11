@@ -7,7 +7,10 @@ msgstr ""
 "<br>\n"
 "Justificativa: \"{$versionJustification}\"<br>\n"
 "<br>\n"
-"<a href=\"{$linkToSubmission}\">Link para o preprint</a>"
+"<a href=\"{$submissionUrl}\">Link para o preprint</a>"
+
+msgid "emails.submittedVersion.name"
+msgstr "Nova versão de preprint submetida"
 
 msgid "emails.submittedVersion.description"
 msgstr ""
@@ -23,7 +26,10 @@ msgstr ""
 "<br>\n"
 "Justificativa: \"{$deletingJustification}\"<br>\n"
 "<br>\n"
-"<a href=\"{$linkToSubmission}\">Link para o preprint</a>"
+"<a href=\"{$authorSubmissionUrl}\">Link para o preprint</a>"
+
+msgid "emails.deletedVersion.name"
+msgstr "Versão de preprint excluída"
 
 msgid "emails.deletedVersion.description"
 msgstr ""

@@ -11,7 +11,6 @@ use PKP\db\DAORegistry;
 use APP\facades\Repo;
 use APP\core\Application;
 use Illuminate\Support\Facades\Mail;
-use PKP\mail\Mailable;
 
 class AuthorVersionHandler extends APIHandler
 {
@@ -69,7 +68,7 @@ class AuthorVersionHandler extends APIHandler
 
         Repo::publication()->edit($publication, ['versionJustification' => $versionJustification]);
 
-        $this->sendSubmittedVersionEmail($publication, $versionJustification);
+        $this->sendSubmittedVersionEmail($submission, $publication, $versionJustification);
 
         return $response->withStatus(200);
     }
@@ -85,7 +84,7 @@ class AuthorVersionHandler extends APIHandler
             return $response->withStatus(400);
         }
 
-        $this->sendDeletedVersionEmail($publication, $deletingJustification);
+        $this->sendDeletedVersionEmail($submission, $publication, $deletingJustification);
         Repo::publication()->delete($publication);
 
         return $response->withStatus(200);
@@ -107,23 +106,19 @@ class AuthorVersionHandler extends APIHandler
         return $response->withStatus(200);
     }
 
-    private function sendSubmittedVersionEmail($publication, $versionJustification)
+    private function sendSubmittedVersionEmail($submission, $publication, $versionJustification)
     {
         $request = $this->getRequest();
         $context = $request->getContext();
 
         $emailTemplateKey = 'SUBMITTED_VERSION_NOTIFICATION';
         $managers = $this->getManagersAssigned($publication);
-        $params = [
-            'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
-            'linkToSubmission' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId')),
-            'versionJustification' => $versionJustification
-        ];
+        $params = ['versionJustification' => $versionJustification];
 
-        $this->sendEmailFromTemplate($emailTemplateKey, $managers, $params);
+        $this->sendEmailFromTemplate($submission, $emailTemplateKey, $managers, $params);
     }
 
-    private function sendDeletedVersionEmail($publication, $deletingJustification)
+    private function sendDeletedVersionEmail($submission, $publication, $deletingJustification)
     {
         $request = $this->getRequest();
         $context = $request->getContext();
@@ -134,30 +129,32 @@ class AuthorVersionHandler extends APIHandler
             ['email' => $primaryAuthor->getData('email'), 'name' => $primaryAuthor->getFullName()]
         ];
 
-        $params = [
-            'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
-            'linkToSubmission' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'authorDashboard', 'submission', $publication->getData('submissionId')),
-            'deletingJustification' => $deletingJustification
-        ];
+        $params = ['deletingJustification' => $deletingJustification];
 
-        $this->sendEmailFromTemplate($emailTemplateKey, $recipients, $params);
+        $this->sendEmailFromTemplate($submission, $emailTemplateKey, $recipients, $params);
     }
 
-    private function sendEmailFromTemplate(string $templateKey, array $recipients, array $params)
+    private function sendEmailFromTemplate($submission, string $templateKey, array $recipients, array $params)
     {
         $request = $this->getRequest();
         $context = $request->getContext();
+
+        $keyToClassMap = [
+            'SUBMITTED_VERSION_NOTIFICATION' => 'APP\plugins\generic\authorVersion\classes\mail\mailables\SubmittedVersionNotification',
+            'DELETED_VERSION_NOTIFICATION' => 'APP\plugins\generic\authorVersion\classes\mail\mailables\DeletedVersionNotification'
+        ];
 
         $emailTemplate = Repo::emailTemplate()->getByKey(
             $context->getId(),
             $templateKey
         );
+        $emailTemplateClass = $keyToClassMap[$templateKey];
 
-        $email = new Mailable($params);
+        $email = new $emailTemplateClass($context, $submission, $params);
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
         $email->to($recipients);
-        $email->subject($emailTemplate->getSubject());
-        $email->body($emailTemplate->getBody());
+        $email->subject($emailTemplate->getLocalizedData('subject'));
+        $email->body($emailTemplate->getLocalizedData('body'));
 
         Mail::send($email);
     }
