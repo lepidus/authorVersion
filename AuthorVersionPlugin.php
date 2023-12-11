@@ -12,7 +12,16 @@
  *
  */
 
-import('lib.pkp.classes.plugins.GenericPlugin');
+namespace APP\plugins\generic\authorVersion;
+
+use PKP\plugins\GenericPlugin;
+use APP\core\Application;
+use PKP\plugins\Hook;
+use APP\facades\Repo;
+use PKP\security\Role;
+use PKP\submission\PKPSubmission;
+use APP\template\TemplateManager;
+use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
 
 class AuthorVersionPlugin extends GenericPlugin
 {
@@ -20,21 +29,20 @@ class AuthorVersionPlugin extends GenericPlugin
     {
         $success = parent::register($category, $path, $mainContextId);
 
-        if (!Config::getVar('general', 'installed') || defined('RUNNING_UPGRADE')) {
-            return true;
+        if (Application::isUnderMaintenance()) {
+            return $success;
         }
 
         if ($success && $this->getEnabled($mainContextId)) {
-            HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates')); // Para sobrescrever templates
-            HookRegistry::register('Template::Workflow', array($this, 'addWorkflowModifications'));
-            HookRegistry::register('TemplateManager::display', array($this, 'loadResourcesToWorkflow'));
-            HookRegistry::register('Publication::canAuthorPublish', array($this, 'setAuthorCanPublishVersion'));
-            HookRegistry::register('Dispatcher::dispatch', array($this, 'setupAuthorVersionHandler'));
-            HookRegistry::register('Schema::get::publication', array($this, 'addOurFieldsToPublicationSchema'));
-            HookRegistry::register('Publication::version', array($this, 'preventsDuplicationOfVersionJustification'));
-            HookRegistry::register('Templates::Preprint::Details', array($this, 'showVersionJustificationOnPreprintDetails'));
-            HookRegistry::register('TemplateManager::display', array($this, 'addNewVersionSubmissionTab'));
-            HookRegistry::register('Submission::getMany::queryBuilder', array($this, 'modifySubmissionQueryBuilder'));
+            Hook::add('Template::Workflow', [$this, 'addWorkflowModifications']);
+            Hook::add('TemplateManager::display', [$this, 'loadResourcesToWorkflow']);
+            Hook::add('Publication::canAuthorPublish', [$this, 'setAuthorCanPublishVersion']);
+            Hook::add('Dispatcher::dispatch', [$this, 'setupAuthorVersionHandler']);
+            Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
+            Hook::add('Publication::version', [$this, 'preventsDuplicationOfVersionJustification']);
+            Hook::add('Templates::Preprint::Details', [$this, 'showVersionJustificationOnPreprintDetails']);
+            Hook::add('TemplateManager::display', [$this, 'addNewVersionSubmissionTab']);
+            Hook::add('Submission::Collector', [$this, 'modifySubmissionCollector']);
         }
 
         return $success;
@@ -62,7 +70,7 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function addOurFieldsToPublicationSchema($hookName, $params)
     {
-        $schema = & $params[0];
+        $schema = &$params[0];
 
         $schema->properties->{'versionJustification'} = (object) [
             'type' => 'string',
@@ -76,38 +84,75 @@ class AuthorVersionPlugin extends GenericPlugin
     public function preventsDuplicationOfVersionJustification($hookName, $params)
     {
         $newPublication = &$params[0];
-        $request = $params[2];
 
-        $newPublication = Services::get('publication')->edit(
-            $newPublication,
-            ['versionJustification' => null],
-            $request
-        );
+        $newPublication = Repo::publication()->edit($newPublication, ['versionJustification' => null]);
 
         return false;
     }
 
     public function addWorkflowModifications($hookName, $params)
     {
-        $templateMgr = & $params[1];
-        $request = PKPApplication::get()->getRequest();
+        $templateMgr = &$params[1];
+        $request = Application::get()->getRequest();
         $requestedPage = $templateMgr->getTemplateVars('requestedPage');
 
-        if($requestedPage == 'authorDashboard') {
-            $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
+        if ($requestedPage == 'authorDashboard') {
+            $templateMgr->registerFilter("output", [$this, 'replaceRelationsButtonFilter']);
+            $templateMgr->registerFilter("output", [$this, 'addNewAuthorActionsFilter']);
+            $templateMgr->registerFilter("output", [$this, 'addVersionJustificationButtonFilter']);
         }
 
-        if($requestedPage == 'workflow') {
-            $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
-            $templateMgr->registerFilter("output", array($this, 'addDeleteVersionButtonFilter'));
+        if ($requestedPage == 'workflow') {
+            $templateMgr->registerFilter("output", [$this, 'addVersionJustificationButtonFilter']);
+            $templateMgr->registerFilter("output", [$this, 'addDeleteVersionButtonFilter']);
         }
 
         return false;
     }
 
+    public function replaceRelationsButtonFilter($output, $templateMgr)
+    {
+        if (
+            preg_match('/class="pkpWorkflow__header"/', $output)
+            && preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
+            $blockStartPosition = $matches[0][1];
+
+            preg_match('/<\/span>/', $output, $matches, PREG_OFFSET_CAPTURE, $blockStartPosition);
+            $blockEndPosition = $matches[0][1] + strlen('</span>');
+
+            $newRelationsButton = $templateMgr->fetch($this->getTemplateResource('relationsButton.tpl'));
+
+            $output = substr_replace($output, $newRelationsButton, $blockStartPosition, $blockEndPosition - $blockStartPosition);
+            $templateMgr->unregisterFilter('output', array($this, 'replaceRelationsButtonFilter'));
+        }
+
+        return $output;
+    }
+
+    public function addNewAuthorActionsFilter($output, $templateMgr)
+    {
+        if (
+            preg_match('/class="pkpWorkflow__header"/', $output)
+            && preg_match_all('/<\/pkp-header>/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
+            $insertPosition = $matches[0][1][1];
+
+            $newAuthorActions = $templateMgr->fetch($this->getTemplateResource('newAuthorActions.tpl'));
+
+            $output = substr_replace($output, $newAuthorActions, $insertPosition, 0);
+            $templateMgr->unregisterFilter('output', array($this, 'addNewAuthorActionsFilter'));
+        }
+
+        return $output;
+    }
+
     public function addVersionJustificationButtonFilter($output, $templateMgr)
     {
-        if (preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)) {
+        if (
+            preg_match('/class="pkpWorkflow__header"/', $output)
+            && preg_match('/<span[^>]+class="pkpPublication__relation"/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
             $posRelationsBeginning = $matches[0][1];
 
             $versionJustificationButton = $templateMgr->fetch($this->getTemplateResource('versionJustificationWorkflow.tpl'));
@@ -120,10 +165,12 @@ class AuthorVersionPlugin extends GenericPlugin
 
     public function addDeleteVersionButtonFilter($output, $templateMgr)
     {
-        $pattern = '/<template slot="actions">/';
-        if (preg_match_all($pattern, $output, $matches, PREG_OFFSET_CAPTURE)) {
+        if (
+            preg_match('/class="pkpWorkflow__header"/', $output)
+            && preg_match_all('/<template slot="actions">/', $output, $matches, PREG_OFFSET_CAPTURE)
+        ) {
             $posPubActionsBeginning = $matches[0][1][1];
-            $patternLength = strlen($pattern);
+            $patternLength = strlen('<template slot="actions">');
 
             $deleteVersionButton = $templateMgr->fetch($this->getTemplateResource('deleteVersionButton.tpl'));
 
@@ -161,10 +208,10 @@ class AuthorVersionPlugin extends GenericPlugin
     private function addFormComponent($templateMgr, $request, $formName, $actionOp)
     {
         $context = $request->getContext();
-        $submission = $templateMgr->get_template_vars('submission');
+        $submission = $templateMgr->getTemplateVars('submission');
+        $formName = 'APP\plugins\generic\authorVersion\classes\components\forms\\' . $formName;
 
-        $this->import("classes.components.forms.$formName");
-        $actionUrl = $request->getDispatcher()->url($request, ROUTE_API, $context->getPath(), "authorVersion/$actionOp", null, null, ['submissionId' => $submission->getId()]);
+        $actionUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), "authorVersion/$actionOp", null, null, ['submissionId' => $submission->getId()]);
         $formComponent = new $formName($actionUrl, $submission);
 
         $workflowComponents = $templateMgr->getState('components');
@@ -175,15 +222,16 @@ class AuthorVersionPlugin extends GenericPlugin
         ]);
     }
 
-    public function setupAuthorVersionHandler($hookName, $request)
+    public function setupAuthorVersionHandler($hookName, $params)
     {
+        $request = $params[0];
         $router = $request->getRouter();
-        if (!($router instanceof \APIRouter)) {
+
+        if (!($router instanceof \PKP\core\APIRouter)) {
             return;
         }
 
         if (str_contains($request->getRequestPath(), 'api/v1/authorVersion')) {
-            $this->import('api.v1.authorVersion.AuthorVersionHandler');
             $handler = new AuthorVersionHandler();
         }
 
@@ -199,9 +247,9 @@ class AuthorVersionPlugin extends GenericPlugin
     public function showVersionJustificationOnPreprintDetails($hookName, $params)
     {
         $templateMgr = $params[1];
-        $output = & $params[2];
+        $output = &$params[2];
 
-        $publication = $templateMgr->get_template_vars('publication');
+        $publication = $templateMgr->getTemplateVars('publication');
 
         $version = $publication->getData('version');
         $versionJustification = $publication->getData('versionJustification');
@@ -226,14 +274,14 @@ class AuthorVersionPlugin extends GenericPlugin
         $request = Application::get()->getRequest();
         $context = $request->getContext();
         $dispatcher = $request->getDispatcher();
-        $apiUrl = $dispatcher->url($request, ROUTE_API, $context->getPath(), '_submissions');
+        $apiUrl = $dispatcher->url($request, Application::ROUTE_API, $context->getPath(), '_submissions');
 
         $lists = $templateMgr->getState('components');
-        $userRoles = $templateMgr->get_template_vars('userRoles');
+        $userRoles = $templateMgr->getTemplateVars('userRoles');
 
-        $includeAssignedEditorsFilter = array_intersect([ROLE_ID_SITE_ADMIN, ROLE_ID_MANAGER], $userRoles);
+        $includeAssignedEditorsFilter = array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles);
         $includeIssuesFilter = array_intersect(
-            [ROLE_ID_SITE_ADMIN, ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT],
+            [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT],
             $userRoles
         );
 
@@ -283,36 +331,29 @@ class AuthorVersionPlugin extends GenericPlugin
         return $output;
     }
 
-    public function modifySubmissionQueryBuilder($hookName, $args)
+    public function modifySubmissionCollector($hookName, $params)
     {
-        $submissionQB = & $args[0];
-        $requestArgs = $args[1];
+        $query = &$params[0];
+        $request = Application::get()->getRequest();
 
-        if (empty($requestArgs['newVersion'])) {
-            return;
-        }
+        if ($request->getUserVar('newVersion')) {
+            $query->leftJoin('publications as nvp', 'nvp.submission_id', '=', 's.submission_id')
+                ->where('nvp.version', '>', 1)
+                ->where('nvp.status', '!=', PKPSubmission::STATUS_PUBLISHED);
 
-        $this->import('classes.services.queryBuilders.AuthorVersionQueryBuilder');
-        $submissionQB = new AuthorVersionQueryBuilder();
-        $submissionQB
-            ->filterByContext($requestArgs['contextId'])
-            ->orderBy($requestArgs['orderBy'], $requestArgs['orderDirection'])
-            ->assignedTo($requestArgs['assignedTo'])
-            ->filterByStatus($requestArgs['status'])
-            ->filterByStageIds($requestArgs['stageIds'])
-            ->filterByIncomplete($requestArgs['isIncomplete'])
-            ->filterByOverdue($requestArgs['isOverdue'])
-            ->filterByDaysInactive($requestArgs['daysInactive'])
-            ->filterByCategories(isset($requestArgs['categoryIds']) ? $requestArgs['categoryIds'] : null)
-            ->filterByNewVersion($requestArgs['newVersion'], isset($requestArgs['nonSubmitted']) ? $requestArgs['nonSubmitted'] : false)
-            ->searchPhrase($requestArgs['searchPhrase']);
+            $submittedVersionSubQuery = function ($query) {
+                $query->select('publication_id')
+                    ->from('publication_settings')
+                    ->where('setting_name', '=', 'versionJustification');
+            };
 
-        if (isset($requestArgs['count'])) {
-            $submissionQB->limitTo($requestArgs['count']);
-        }
+            $filterSubmitted = !$request->getUserVar('nonSubmitted');
 
-        if (isset($requestArgs['offset'])) {
-            $submissionQB->offsetBy($requestArgs['count']);
+            if ($filterSubmitted) {
+                $query->whereIn('nvp.publication_id', $submittedVersionSubQuery);
+            } else {
+                $query->whereNotIn('nvp.publication_id', $submittedVersionSubQuery);
+            }
         }
     }
 }
