@@ -159,7 +159,6 @@ class AuthorVersionPlugin extends GenericPlugin
 
             $output = substr_replace($output, $versionJustificationButton, $posRelationsBeginning, 0);
             $templateMgr->unregisterFilter('output', array($this, 'addVersionJustificationButtonFilter'));
-            error_log("Tá rodando");
         }
         return $output;
     }

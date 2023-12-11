@@ -59,7 +59,8 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if(!is_null($publication->getData('versionJustification'))
+        if (
+            !is_null($publication->getData('versionJustification'))
             || $publication->getData('status') == PKPSubmission::STATUS_PUBLISHED
             || $publication->getData('version') == 1
         ) {
@@ -80,7 +81,7 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED or $publication->getData('version') == 1) {
+        if ($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED or $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
@@ -97,7 +98,7 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED || $publication->getData('version') == 1) {
+        if ($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED || $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
@@ -113,9 +114,12 @@ class AuthorVersionHandler extends APIHandler
 
         $emailTemplateKey = 'SUBMITTED_VERSION_NOTIFICATION';
         $managers = $this->getManagersAssigned($publication);
-        $params = ['versionJustification' => $versionJustification];
 
-        $this->sendEmailFromTemplate($submission, $emailTemplateKey, $managers, $params);
+        if (!empty($managers)) {
+            $params = ['versionJustification' => $versionJustification];
+
+            $this->sendEmailFromTemplate($submission, $emailTemplateKey, $managers, $params);
+        }
     }
 
     private function sendDeletedVersionEmail($submission, $publication, $deletingJustification)
@@ -196,7 +200,7 @@ class AuthorVersionHandler extends APIHandler
         $managerGroupName = 'preprint server manager';
 
         foreach ($userGroupsOfUser as $userGroup) {
-            if(strtolower($userGroup->getName('en_US')) == $managerGroupName) {
+            if(strtolower($userGroup->getName('en')) == $managerGroupName) {
                 return true;
             }
         }
