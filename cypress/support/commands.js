@@ -26,6 +26,7 @@ Cypress.Commands.add('createSubmission', function(submissionData) {
 
     beginSubmission(submissionData);
     detailsStep(submissionData);
+    filesStep(submissionData);
     cy.contains('button', 'Continue').click();
     cy.contains('button', 'Continue').click();
     cy.contains('button', 'Submit').click();
