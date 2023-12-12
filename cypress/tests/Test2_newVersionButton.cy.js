@@ -1,3 +1,5 @@
+import '../support/commands.js';
+
 describe('Author Version - Create new version', function () {
     let submissionData;
     
@@ -17,45 +19,10 @@ describe('Author Version - Create new version', function () {
 		}
     });
 
-    function beginSubmission() {
-        cy.get('input[name="locale"][value="en"]').click();
-        cy.setTinyMceContent('startSubmission-title-control', submissionData.title);
-        
-        cy.get('input[name="submissionRequirements"]').check();
-        cy.get('input[name="privacyConsent"]').check();
-        cy.contains('button', 'Begin Submission').click();
-    }
-
-    function detailsStep() {
-        cy.setTinyMceContent('titleAbstract-abstract-control-en', submissionData.abstract);
-        submissionData.keywords.forEach(keyword => {
-            cy.get('#titleAbstract-keywords-control-en').type(keyword, {delay: 0});
-            cy.get('#titleAbstract-keywords-control-en').type('{enter}', {delay: 0});
-        });
-        cy.contains('button', 'Continue').click();
-    }
-
-    function filesStep() {
-        cy.addSubmissionGalleys(submissionData.files);
-        cy.contains('button', 'Continue').click();
-    }
-
     it('Creates new submission as author', function () {
         cy.login('zwoods', null, 'publicknowledge');
-		cy.get('div#myQueue a:contains("New Submission")').click();
-
-        beginSubmission();
-        detailsStep();
-        filesStep();
-        cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Continue').click();
-        cy.contains('button', 'Submit').click();
-        cy.get('.modal__panel:visible').within(() => {
-            cy.contains('button', 'Submit').click();
-        });
-
-        cy.waitJQuery();
-		cy.contains('h1', 'Submission complete');
+		
+        cy.createSubmission(submissionData);
 		cy.contains('a', 'Review this submission').click();
 
         cy.get('button:contains("Post")').should('not.exist');
