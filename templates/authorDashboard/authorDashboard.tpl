@@ -98,7 +98,7 @@
 									</ul>
 								</dropdown>
 							</span>
-							<span class="pkpPublication__relation" v-if="workingPublication.status != getConstant('STATUS_PUBLISHED')"> 
+							<span class="pkpPublication__relation" v-if="workingPublication.status != getConstant('STATUS_PUBLISHED') || workingPublication.relationStatus != {$smarty.const.PUBLICATION_RELATION_PUBLISHED}"> 
 								<dropdown
 									class="pkpWorkflow__relation"
 									label="{translate key="publication.relation"}"
