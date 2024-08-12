@@ -1,6 +1,9 @@
 describe('Author Version - Submission relations updating', function () {
     let publishedArticleDoi = 'https://doi.org/10.1234/Non-existentDoi';
 
+    before(function() {
+        Cypress.config('defaultCommandTimeout', 4000);
+    });
     it('Author can change relations on posted preprint version', function () {
         cy.login('zwoods', null, 'publicknowledge');
         cy.get('#myQueue-button').click();
