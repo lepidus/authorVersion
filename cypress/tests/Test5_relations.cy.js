@@ -32,7 +32,7 @@ describe('Author Version - Submission relations updating', function () {
         cy.contains('View Woods').click({force: true});
         cy.get('#publication-button').click();
         cy.get('button:contains("Unpost")').click();
-        cy.get('.modal button:contains("Unpost")').click();
+        cy.get('.modal__panel button:contains("Unpost")').click();
         cy.get('.pkpPublication__statusUnpublished');
     });
     it('Author changes preprint relation to "published as an article"', function () {
