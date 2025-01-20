@@ -52,7 +52,7 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if(!is_null($publication->getData('versionJustification'))
+        if (!is_null($publication->getData('versionJustification'))
             || $publication->getData('status') == STATUS_PUBLISHED
             || $publication->getData('version') == 1
         ) {
@@ -74,7 +74,7 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
+        if ($publication->getData('status') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
@@ -91,7 +91,7 @@ class AuthorVersionHandler extends APIHandler
         $submission = $this->getSubmission($slimRequest);
         $publication = $submission->getLatestPublication();
 
-        if($publication->getData('status') == STATUS_PUBLISHED || $publication->getData('version') == 1) {
+        if ($publication->getData('status') == STATUS_PUBLISHED || $publication->getData('version') == 1) {
             return $response->withStatus(400);
         }
 
@@ -119,13 +119,21 @@ class AuthorVersionHandler extends APIHandler
 
     private function sendDeletedVersionEmail($publication, $deletingJustification)
     {
+        if (empty($authors)) {
+            return;
+        }
+
         $request = $this->getRequest();
         $context = $request->getContext();
-
         $emailTemplate = 'DELETED_VERSION_NOTIFICATION';
-        $primaryAuthor = $publication->getPrimaryAuthor();
+        $recipientAuthor = $publication->getPrimaryAuthor();
+
+        if (!$recipientAuthor) {
+            $recipientAuthor = $publication->getData('authors')[0];
+        }
+
         $recipients = [
-            ['email' => $primaryAuthor->getData('email'), 'name' => $primaryAuthor->getFullName()]
+            ['email' => $recipientAuthor->getData('email'), 'name' => $recipientAuthor->getFullName()]
         ];
 
         $params = [
@@ -145,7 +153,7 @@ class AuthorVersionHandler extends APIHandler
         $email = new MailTemplate($templateName, null, $context, false);
         $email->setFrom($context->getData('contactEmail'), $context->getData('contactName'));
 
-        foreach($recipients as $recipient) {
+        foreach ($recipients as $recipient) {
             $email->addRecipient($recipient['email'], $recipient['name']);
         }
 
@@ -171,7 +179,7 @@ class AuthorVersionHandler extends APIHandler
         while ($assignment = $allAssignments->next()) {
             $userId = $assignment->getUserId();
 
-            if($this->userIsManager($userId)) {
+            if ($this->userIsManager($userId)) {
                 $manager = $userDao->getById($userId);
                 $managers[] = [
                     'email' => $manager->getEmail(),
@@ -189,8 +197,8 @@ class AuthorVersionHandler extends APIHandler
         $userGroupsOfUser = $userGroupDao->getByUserId($userId);
         $managerGroupName = 'preprint server manager';
 
-        while($userGroup = $userGroupsOfUser->next()) {
-            if(strtolower($userGroup->getName('en_US')) == $managerGroupName) {
+        while ($userGroup = $userGroupsOfUser->next()) {
+            if (strtolower($userGroup->getName('en_US')) == $managerGroupName) {
                 return true;
             }
         }
