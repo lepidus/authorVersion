@@ -124,13 +124,18 @@ class AuthorVersionHandler extends APIHandler
 
     private function sendDeletedVersionEmail($submission, $publication, $deletingJustification)
     {
+        $authors = $publication->getData('authors');
+        if ($authors->isEmpty()) {
+            return;
+        }
+
         $request = $this->getRequest();
         $context = $request->getContext();
-
         $emailTemplateKey = 'DELETED_VERSION_NOTIFICATION';
-        $primaryAuthor = $publication->getPrimaryAuthor();
+        $recipientAuthor = $publication->getPrimaryAuthor() ?? $authors->first();
+
         $recipients = [
-            ['email' => $primaryAuthor->getData('email'), 'name' => $primaryAuthor->getFullName()]
+            ['email' => $recipientAuthor->getData('email'), 'name' => $recipientAuthor->getFullName()]
         ];
 
         $params = ['deletingJustification' => $deletingJustification];
