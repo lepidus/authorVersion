@@ -124,13 +124,18 @@ class AuthorVersionHandler extends APIHandler
 
     private function sendDeletedVersionEmail($submission, $publication, $deletingJustification)
     {
+        $authors = $publication->getData('authors');
+        if ($authors->isEmpty()) {
+            return;
+        }
+
         $request = $this->getRequest();
         $context = $request->getContext();
-
         $emailTemplateKey = 'DELETED_VERSION_NOTIFICATION';
-        $primaryAuthor = $publication->getPrimaryAuthor();
+        $recipientAuthor = $publication->getPrimaryAuthor() ?? $authors->first();
+
         $recipients = [
-            ['email' => $primaryAuthor->getData('email'), 'name' => $primaryAuthor->getFullName()]
+            ['email' => $recipientAuthor->getData('email'), 'name' => $recipientAuthor->getFullName()]
         ];
 
         $params = ['deletingJustification' => $deletingJustification];
@@ -180,7 +185,7 @@ class AuthorVersionHandler extends APIHandler
         while ($assignment = $allAssignments->next()) {
             $userId = $assignment->getUserId();
 
-            if($this->userIsManager($userId)) {
+            if ($this->userIsManager($userId)) {
                 $manager = Repo::user()->get($userId);
                 $managers[] = [
                     'email' => $manager->getEmail(),
@@ -200,7 +205,7 @@ class AuthorVersionHandler extends APIHandler
         $managerGroupName = 'preprint server manager';
 
         foreach ($userGroupsOfUser as $userGroup) {
-            if(strtolower($userGroup->getName('en')) == $managerGroupName) {
+            if (strtolower($userGroup->getName('en')) == $managerGroupName) {
                 return true;
             }
         }

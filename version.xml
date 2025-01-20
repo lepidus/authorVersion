@@ -12,8 +12,8 @@
 <version>
 	<application>authorVersion</application>
 	<type>plugins.generic</type>
-	<release>2.0.2.0</release>
-	<date>2024-08-12</date>
+	<release>2.0.3.0</release>
+	<date>2025-01-20</date>
 	<lazy-load>1</lazy-load>
 	<class>AuthorVersionPlugin</class>
 </version>
