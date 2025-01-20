@@ -28,7 +28,7 @@ class AuthorVersionQueryBuilder extends \APP\Services\QueryBuilders\SubmissionQu
                     ->where('setting_name', '=', 'versionJustification');
             };
 
-            if($this->submittedVersion) {
+            if ($this->submittedVersion) {
                 $q->whereIn('nvp.publication_id', $submittedVersionSubQuery);
             } else {
                 $q->whereNotIn('nvp.publication_id', $submittedVersionSubQuery);

@@ -93,11 +93,11 @@ class AuthorVersionPlugin extends GenericPlugin
         $request = PKPApplication::get()->getRequest();
         $requestedPage = $templateMgr->getTemplateVars('requestedPage');
 
-        if($requestedPage == 'authorDashboard') {
+        if ($requestedPage == 'authorDashboard') {
             $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
         }
 
-        if($requestedPage == 'workflow') {
+        if ($requestedPage == 'workflow') {
             $templateMgr->registerFilter("output", array($this, 'addVersionJustificationButtonFilter'));
             $templateMgr->registerFilter("output", array($this, 'addDeleteVersionButtonFilter'));
         }
