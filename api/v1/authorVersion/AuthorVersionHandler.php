@@ -180,7 +180,7 @@ class AuthorVersionHandler extends APIHandler
         while ($assignment = $allAssignments->next()) {
             $userId = $assignment->getUserId();
 
-            if($this->userIsManager($userId)) {
+            if ($this->userIsManager($userId)) {
                 $manager = Repo::user()->get($userId);
                 $managers[] = [
                     'email' => $manager->getEmail(),
@@ -200,7 +200,7 @@ class AuthorVersionHandler extends APIHandler
         $managerGroupName = 'preprint server manager';
 
         foreach ($userGroupsOfUser as $userGroup) {
-            if(strtolower($userGroup->getName('en')) == $managerGroupName) {
+            if (strtolower($userGroup->getName('en')) == $managerGroupName) {
                 return true;
             }
         }
