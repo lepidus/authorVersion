@@ -20,7 +20,6 @@ use PKP\plugins\Hook;
 use APP\facades\Repo;
 use PKP\security\Role;
 use PKP\submission\PKPSubmission;
-use APP\template\TemplateManager;
 use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
 
 class AuthorVersionPlugin extends GenericPlugin
@@ -61,6 +60,28 @@ class AuthorVersionPlugin extends GenericPlugin
     public function getInstallEmailTemplatesFile()
     {
         return $this->getPluginPath() . DIRECTORY_SEPARATOR . 'emailTemplates.xml';
+    }
+
+    // Modification of Plugin::installEmailTemplates function
+    public function installEmailTemplates($hookName, $params)
+    {
+        $installer = &$params[0];
+        $result = &$params[1];
+
+        $locales = [];
+        foreach ($installer->installedLocales as $locale) {
+            if (file_exists($this->getPluginPath() . "/locale/{$locale}/emails.po")) {
+                $locales[] = $locale;
+            }
+        }
+        $this->addLocaleData();
+        $status = Repo::emailTemplate()->dao->installEmailTemplates($this->getInstallEmailTemplatesFile(), $locales, null, false);
+
+        if ($status === false) {
+            $installer->setError(Installer::INSTALLER_ERROR_DB, str_replace('{$file}', $this->getInstallEmailTemplatesFile(), __('installer.installParseEmailTemplatesFileError')));
+            $result = false;
+        }
+        return false;
     }
 
     public function setAuthorCanPublishVersion($hookName, $params)
