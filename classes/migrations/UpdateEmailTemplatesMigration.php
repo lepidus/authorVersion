@@ -4,6 +4,7 @@ namespace APP\plugins\generic\authorVersion\classes\migrations;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use PKP\plugins\PluginRegistry;
 
 class UpdateEmailTemplatesMigration extends Migration
 {
@@ -14,6 +15,13 @@ class UpdateEmailTemplatesMigration extends Migration
 
     public function up(): void
     {
-        // TODO
+        PluginRegistry::loadCategory('generic');
+        $plugin = PluginRegistry::getPlugin('generic', 'authorversionplugin');
+
+        foreach (self::EMAIL_TEMPLATES as $templateKey) {
+            DB::table('email_templates_default_data')
+                ->where('email_key', '=', $templateKey)
+                ->delete();
+        }
     }
 }
