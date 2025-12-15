@@ -20,7 +20,6 @@ use PKP\plugins\Hook;
 use APP\facades\Repo;
 use PKP\security\Role;
 use PKP\submission\PKPSubmission;
-use APP\template\TemplateManager;
 use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
 
 class AuthorVersionPlugin extends GenericPlugin
