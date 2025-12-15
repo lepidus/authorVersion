@@ -3,25 +3,22 @@
 namespace APP\plugins\generic\authorVersion\classes\migrations;
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Support\Facades\DB;
 use PKP\plugins\PluginRegistry;
+use APP\facades\Repo;
 
 class UpdateEmailTemplatesMigration extends Migration
 {
-    private const EMAIL_TEMPLATES = [
-        'SUBMITTED_VERSION_NOTIFICATION',
-        'DELETED_VERSION_NOTIFICATION'
-    ];
+    private const EMAIL_TEMPLATE_LOCALES = ['en', 'es', 'pt_BR'];
 
     public function up(): void
     {
         PluginRegistry::loadCategory('generic');
         $plugin = PluginRegistry::getPlugin('generic', 'authorversionplugin');
 
-        foreach (self::EMAIL_TEMPLATES as $templateKey) {
-            DB::table('email_templates_default_data')
-                ->where('email_key', '=', $templateKey)
-                ->delete();
-        }
+        $plugin->addLocaleData();
+        Repo::emailTemplate()->dao->installEmailTemplates(
+            $plugin->getInstallEmailTemplatesFile(),
+            self::EMAIL_TEMPLATE_LOCALES
+        );
     }
 }
