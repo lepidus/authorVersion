@@ -1,5 +1,5 @@
 function beginSubmission(submissionData) {
-    cy.get('input[name="locale"][value="en"]').click();
+    cy.get('label:contains("English")').click();
     cy.setTinyMceContent('startSubmission-title-control', submissionData.title);
     
     cy.get('input[name="submissionRequirements"]').check();
@@ -36,4 +36,21 @@ Cypress.Commands.add('createSubmission', function(submissionData) {
 
     cy.waitJQuery();
     cy.contains('h1', 'Submission complete');
+});
+
+Cypress.Commands.add('openSubmission', function(dashboardPanel, submissionTitle) {
+    cy.get('div[data-pc-section="panel"]').first().within(() => {
+        cy.get('div').first().then($el => {
+            if ($el.attr('aria-expanded') === 'false') {
+                $el.click();
+                cy.wait(500);
+            }
+        });
+        cy.contains('span', dashboardPanel).click();
+    });
+
+    cy.contains('span', submissionTitle).parent().parent().within(() => {
+        cy.contains('button', 'View').click();
+    });
+    cy.waitJQuery();
 });
