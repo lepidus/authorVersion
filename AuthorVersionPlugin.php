@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace APP\plugins\generic\authorVersion;
 
 use APP\core\Application;
+use APP\publication\Publication;
+use APP\submission\Submission;
 use APP\components\forms\publication\RelationForm;
 use APP\facades\Repo;
 use APP\plugins\generic\authorVersion\api\v1\authorVersion\AuthorVersionHandler;
@@ -18,6 +20,10 @@ use APP\plugins\generic\authorVersion\classes\NewVersionSubmissionFilter;
 use APP\template\TemplateManager;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
+use PKP\core\APIRouter;
+use PKP\core\PKPBaseController;
+use PKP\security\authorization\AuthorizationPolicy;
+use PKP\security\authorization\StageRolePolicy;
 use PKP\security\Role;
 
 /** Author-submitted publication versions for OPS 3.5. */
@@ -37,6 +43,7 @@ class AuthorVersionPlugin extends GenericPlugin
             Hook::add('APIHandler::endpoints::_submissions', [$this, 'setupVersionSubmissionLists']);
             Hook::add('Schema::get::publication', [$this, 'addOurFieldsToPublicationSchema']);
             Hook::add('Publication::version', [$this, 'preventsDuplicationOfVersionJustification']);
+            Hook::add('Publication::validate', [$this, 'validateLockedPublicationRelation']);
             Hook::add('Templates::Preprint::Details', [$this, 'showVersionJustificationOnPreprintDetails']);
             Hook::add('Dashboard::views', [$this, 'addNewVersionSubmissionViews']);
             Hook::add('Submission::Collector', [NewVersionSubmissionFilter::class, 'filterQuery']);
@@ -77,6 +84,57 @@ class AuthorVersionPlugin extends GenericPlugin
     public function preventsDuplicationOfVersionJustification($hookName, $params)
     {
         $params[0] = Repo::publication()->edit($params[0], ['versionJustification' => null]);
+        return false;
+    }
+
+    /** Apply the author relation lock to both native and plugin API writes. */
+    public function validateLockedPublicationRelation($hookName, $params): bool
+    {
+        [, $publication, $props] = $params;
+        if (
+            !$publication
+            || (int) $publication->getData('status') !== Submission::STATUS_PUBLISHED
+            || (int) $publication->getData('relationStatus') !== Publication::PUBLICATION_RELATION_PUBLISHED
+            || !array_intersect(['relationStatus', 'vorDoi'], array_keys($props))
+        ) {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+        if (!$request->getRouter() instanceof APIRouter) {
+            return false;
+        }
+
+        $controller = PKPBaseController::getRouteController();
+        $permitted = false;
+        if ($controller) {
+            $authorizedContext = $controller->getAuthorizedContext();
+            $submission = $authorizedContext[Application::ASSOC_TYPE_SUBMISSION] ?? null;
+            if (
+                $submission
+                && (int) $submission->getId() === (int) $publication->getData('submissionId')
+                && isset($authorizedContext[Application::ASSOC_TYPE_USER_ROLES])
+            ) {
+                // Reuse native production access, excluding the author capability.
+                $policy = new StageRolePolicy(
+                    [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT],
+                    WORKFLOW_STAGE_ID_PRODUCTION,
+                    false
+                );
+                $policy->setAuthorizedContext($authorizedContext);
+                $permitted = $policy->effect() === AuthorizationPolicy::AUTHORIZATION_PERMIT;
+            }
+        }
+
+        if (!$permitted) {
+            // Even an unchanged status can clear the DOI when the native route
+            // receives no vorDoi. Protect field presence, not just value changes.
+            foreach (['relationStatus', 'vorDoi'] as $field) {
+                if (array_key_exists($field, $props)) {
+                    $params[0][$field][] = __('api.submissions.403.userCantEdit');
+                }
+            }
+        }
         return false;
     }
 

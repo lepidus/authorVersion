@@ -10,7 +10,7 @@
         "syntax": {
             "requirement": "required",
             "status": "PASS",
-            "reason": "PHP 8.2.34 lint of all 17 PHP files; minimum-PHP artifact recorded in validation README"
+            "reason": "PHP 8.2.34 lint of all 18 PHP files; security artifact recorded in validation README"
         },
         "style": {
             "requirement": "required",
@@ -20,7 +20,7 @@
         "unit": {
             "requirement": "required",
             "status": "PASS",
-            "reason": "Core PHPUnit 13 tests and 62 assertions; isolated JavaScript 13 tests; isolated PHP 55 checks"
+            "reason": "Core PHPUnit 14 tests and 70 assertions; isolated JavaScript 13 tests; isolated PHP 55 checks on PHP 8.2.34"
         },
         "locale": {
             "requirement": "required",
@@ -30,17 +30,17 @@
         "integration": {
             "requirement": "required",
             "status": "PASS",
-            "reason": "OPS 3.5.0.5 PHP 8.4.21 MariaDB; all 31 Cypress tests passed; run 20261002-182057-2865694"
+            "reason": "OPS 3.5.0.5 PHP 8.4.21 MariaDB; all 33 Cypress tests passed; run 20261002-224232-3056844"
         },
         "authorization": {
             "requirement": "required",
             "status": "PASS",
-            "reason": "7 public HTTP scenarios cover author ownership, stage assignment, context isolation, CSRF and rejected mutations; native core access comparison"
+            "reason": "Existing public API ownership, stage, context and CSRF scenarios plus native locked-relation author denials and editorial permission; readback confirms persisted state"
         },
         "review": {
             "requirement": "required",
             "status": "PASS",
-            "reason": "Independent Sol medium review; local fixes integrated and affected integration and regressions passed"
+            "reason": "Independent Sol medium security-diff review found no blocking defect; gaps recorded in README; final editorial HTTP assertion tightened to observed 200"
         }
     }
 }
