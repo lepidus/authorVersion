@@ -1,215 +1,255 @@
 <?php
 
-namespace APP\plugins\generic\authorVersion\API\v1\authorVersion;
+declare(strict_types=1);
 
-use PKP\handler\APIHandler;
-use PKP\security\Role;
-use PKP\security\authorization\PolicySet;
-use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
-use PKP\submission\PKPSubmission;
-use PKP\db\DAORegistry;
-use APP\facades\Repo;
+namespace APP\plugins\generic\authorVersion\api\v1\authorVersion;
+
 use APP\core\Application;
+use APP\facades\Repo;
+use APP\publication\Publication;
+use APP\submission\Submission;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+use PKP\core\PKPBaseController;
+use PKP\core\PKPRequest;
+use PKP\mail\Mailable;
+use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\StageRolePolicy;
+use PKP\security\authorization\SubmissionAccessPolicy;
+use PKP\security\authorization\UserRolesRequiredPolicy;
+use PKP\security\Role;
+use PKP\stageAssignment\StageAssignment;
+use PKP\userGroup\UserGroup;
+use PKP\validation\ValidatorFactory;
+use RuntimeException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class AuthorVersionHandler extends APIHandler
+class AuthorVersionHandler extends PKPBaseController
 {
-    public function __construct()
+    public function getHandlerPath(): string
     {
-        $this->_handlerPath = 'authorVersion';
-        $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
-        $this->_endpoints = [
-            'POST' => [
-                [
-                    'pattern' => $this->getEndpointPattern() . '/submitVersion',
-                    'handler' => [$this, 'submitVersion'],
-                    'roles' => $roles
-                ],
-                [
-                    'pattern' => $this->getEndpointPattern() . '/deleteVersion',
-                    'handler' => [$this, 'deleteVersion'],
-                    'roles' => [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR]
-                ],
-                [
-                    'pattern' => $this->getEndpointPattern() . '/versionJustification',
-                    'handler' => [$this, 'updateVersionJustification'],
-                    'roles' => $roles
-                ],
-            ],
-        ];
-        parent::__construct();
+        return 'authorVersion';
     }
 
-    public function authorize($request, &$args, $roleAssignments)
+    public function getRouteGroupMiddleware(): array
     {
-        $rolePolicy = new PolicySet(PolicySet::COMBINING_PERMIT_OVERRIDES);
+        return ['has.user', 'has.context'];
+    }
 
-        foreach ($roleAssignments as $role => $operations) {
-            $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
+    public function getGroupRoutes(): void
+    {
+        $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_AUTHOR];
+
+        Route::post('submitVersion', $this->submitVersion(...))
+            ->name('authorVersion.submitVersion')
+            ->middleware(self::roleAuthorizer($roles));
+        Route::post('deleteVersion', $this->deleteVersion(...))
+            ->name('authorVersion.deleteVersion')
+            ->middleware(self::roleAuthorizer([Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR]));
+        Route::post('versionJustification', $this->updateVersionJustification(...))
+            ->name('authorVersion.versionJustification')
+            ->middleware(self::roleAuthorizer($roles));
+    }
+
+    public function authorize(PKPRequest $request, array &$args, array $roleAssignments): bool
+    {
+        $illuminateRequest = $args[0];
+        $actionName = static::getRouteActionName($illuminateRequest);
+        $validator = ValidatorFactory::make(
+            [
+                'submissionId' => $this->getParameter('submissionId'),
+                'publicationId' => $this->getParameter('publicationId'),
+            ],
+            [
+                'submissionId' => ['required', 'integer', 'min:1'],
+                'publicationId' => ['required', 'integer', 'min:1'],
+            ]
+        );
+        if ($validator->fails()) {
+            throw new BadRequestHttpException('Invalid submissionId or publicationId');
         }
-        $this->addPolicy($rolePolicy);
+
+        $this->addPolicy(new UserRolesRequiredPolicy($request), true);
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        // Match the OPS version/publication actions. Metadata write permission
+        // cannot be used here: it disallows authors when an older version is published.
+        $roles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
+        if ($actionName !== 'deleteVersion') {
+            $roles[] = Role::ROLE_ID_AUTHOR;
+        }
+        $this->addPolicy(new StageRolePolicy($roles, WORKFLOW_STAGE_ID_PRODUCTION, false));
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
-    public function submitVersion($slimRequest, $response, $args)
+    public function submitVersion(Request $illuminateRequest): JsonResponse
     {
-        $requestParams = $slimRequest->getParsedBody();
-        $versionJustification = $requestParams['versionJustification'];
-        $submission = $this->getSubmission($slimRequest);
-        $publication = $submission->getLatestPublication();
-
-        if (
-            !is_null($publication->getData('versionJustification'))
-            || $publication->getData('status') == PKPSubmission::STATUS_PUBLISHED
-            || $publication->getData('version') == 1
-        ) {
-            return $response->withStatus(400);
+        $errors = $this->validateJustification($illuminateRequest, 'versionJustification');
+        if ($errors) {
+            return response()->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $publication = $submission->getLatestPublication();
+        if (
+            !$this->isSelectedDraftVersion($publication, $illuminateRequest)
+            || $publication->getData('versionJustification') !== null
+        ) {
+            return response()->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $versionJustification = $illuminateRequest->input('versionJustification');
+        $email = $this->prepareSubmittedVersionEmail($submission, $publication, $versionJustification);
         Repo::publication()->edit($publication, ['versionJustification' => $versionJustification]);
+        if ($email) {
+            Mail::send($email);
+        }
 
-        $this->sendSubmittedVersionEmail($submission, $publication, $versionJustification);
-
-        return $response->withStatus(200);
+        return response()->json([], Response::HTTP_OK);
     }
 
-    public function deleteVersion($slimRequest, $response, $args)
+    public function deleteVersion(Request $illuminateRequest): JsonResponse
     {
-        $requestParams = $slimRequest->getParsedBody();
-        $deletingJustification = $requestParams['deletingJustification'];
-        $submission = $this->getSubmission($slimRequest);
-        $publication = $submission->getLatestPublication();
-
-        if ($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED or $publication->getData('version') == 1) {
-            return $response->withStatus(400);
+        $errors = $this->validateJustification($illuminateRequest, 'deletingJustification');
+        if ($errors) {
+            return response()->json($errors, Response::HTTP_BAD_REQUEST);
         }
 
-        $this->sendDeletedVersionEmail($submission, $publication, $deletingJustification);
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
+        $publication = $submission->getLatestPublication();
+        if (!$this->isSelectedDraftVersion($publication, $illuminateRequest)) {
+            return response()->json([], Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->sendDeletedVersionEmail($submission, $publication, $illuminateRequest->input('deletingJustification'));
         Repo::publication()->delete($publication);
 
-        return $response->withStatus(200);
+        return response()->json([], Response::HTTP_OK);
     }
 
-    public function updateVersionJustification($slimRequest, $response, $args)
+    public function updateVersionJustification(Request $illuminateRequest): JsonResponse
     {
-        $requestParams = $slimRequest->getParsedBody();
-        $versionJustification = $requestParams['versionJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $errors = $this->validateJustification($illuminateRequest, 'versionJustification');
+        if ($errors) {
+            return response()->json($errors, Response::HTTP_BAD_REQUEST);
+        }
+
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
-
-        if ($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED || $publication->getData('version') == 1) {
-            return $response->withStatus(400);
+        if (!$this->isSelectedDraftVersion($publication, $illuminateRequest)) {
+            return response()->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        Repo::publication()->edit($publication, ['versionJustification' => $versionJustification], $this->getRequest());
+        Repo::publication()->edit(
+            $publication,
+            ['versionJustification' => $illuminateRequest->input('versionJustification')]
+        );
 
-        return $response->withStatus(200);
+        return response()->json([], Response::HTTP_OK);
     }
 
-    private function sendSubmittedVersionEmail($submission, $publication, $versionJustification)
+    private function isSelectedDraftVersion(?Publication $publication, Request $request): bool
     {
-        $request = $this->getRequest();
-        $context = $request->getContext();
-
-        $emailTemplateKey = 'SUBMITTED_VERSION_NOTIFICATION';
-        $managers = $this->getManagersAssigned($publication);
-
-        if (!empty($managers)) {
-            $params = ['versionJustification' => $versionJustification];
-
-            $this->sendEmailFromTemplate($submission, $emailTemplateKey, $managers, $params);
-        }
+        return $publication !== null
+            && (int) $publication->getId() === (int) $request->input('publicationId')
+            && (int) $publication->getData('status') === Submission::STATUS_QUEUED
+            && (int) $publication->getData('version') > 1;
     }
 
-    private function sendDeletedVersionEmail($submission, $publication, $deletingJustification)
+    private function validateJustification(Request $request, string $field): array
+    {
+        $validator = ValidatorFactory::make($request->input(), [
+            $field => ['required', 'string'],
+            'publicationId' => ['required', 'integer', 'min:1'],
+        ]);
+
+        return $validator->fails() ? $validator->errors()->getMessages() : [];
+    }
+
+    private function prepareSubmittedVersionEmail(Submission $submission, Publication $publication, string $versionJustification): ?Mailable
+    {
+        $managers = $this->getManagersAssigned($publication);
+        if ($managers) {
+            return $this->prepareEmailFromTemplate(
+                $submission,
+                'SUBMITTED_VERSION_NOTIFICATION',
+                $managers,
+                ['versionJustification' => $versionJustification]
+            );
+        }
+
+        return null;
+    }
+
+    private function sendDeletedVersionEmail(Submission $submission, Publication $publication, string $deletingJustification): void
     {
         $authors = $publication->getData('authors');
+        if ($authors === null) {
+            throw new RuntimeException('Missing authors collection for authorVersion publication ' . $publication->getId());
+        }
         if ($authors->isEmpty()) {
             return;
         }
-
-        $request = $this->getRequest();
-        $context = $request->getContext();
-        $emailTemplateKey = 'DELETED_VERSION_NOTIFICATION';
         $recipientAuthor = $publication->getPrimaryAuthor() ?? $authors->first();
-
-        $recipients = [
-            ['email' => $recipientAuthor->getData('email'), 'name' => $recipientAuthor->getFullName()]
-        ];
-
-        $params = ['deletingJustification' => $deletingJustification];
-
-        $this->sendEmailFromTemplate($submission, $emailTemplateKey, $recipients, $params);
+        $email = $this->prepareEmailFromTemplate(
+            $submission,
+            'DELETED_VERSION_NOTIFICATION',
+            [['email' => $recipientAuthor->getData('email'), 'name' => $recipientAuthor->getFullName()]],
+            ['deletingJustification' => $deletingJustification]
+        );
+        Mail::send($email);
     }
 
-    private function sendEmailFromTemplate($submission, string $templateKey, array $recipients, array $params)
+    private function prepareEmailFromTemplate(Submission $submission, string $templateKey, array $recipients, array $params): Mailable
     {
-        $request = $this->getRequest();
-        $context = $request->getContext();
-
+        $context = $this->getRequest()->getContext();
         $keyToClassMap = [
-            'SUBMITTED_VERSION_NOTIFICATION' => 'APP\plugins\generic\authorVersion\classes\mail\mailables\SubmittedVersionNotification',
-            'DELETED_VERSION_NOTIFICATION' => 'APP\plugins\generic\authorVersion\classes\mail\mailables\DeletedVersionNotification'
+            'SUBMITTED_VERSION_NOTIFICATION' => 'APP\\plugins\\generic\\authorVersion\\classes\\mail\\mailables\\SubmittedVersionNotification',
+            'DELETED_VERSION_NOTIFICATION' => 'APP\\plugins\\generic\\authorVersion\\classes\\mail\\mailables\\DeletedVersionNotification',
         ];
-
-        $emailTemplate = Repo::emailTemplate()->getByKey(
-            $context->getId(),
-            $templateKey
-        );
+        $emailTemplate = Repo::emailTemplate()->getByKey($context->getId(), $templateKey);
+        if (!$emailTemplate) {
+            throw new RuntimeException('Missing authorVersion email template: ' . $templateKey);
+        }
         $emailTemplateClass = $keyToClassMap[$templateKey];
-
         $email = new $emailTemplateClass($context, $submission, $params);
         $email->from($context->getData('contactEmail'), $context->getData('contactName'));
         $email->to($recipients);
         $email->subject($emailTemplate->getLocalizedData('subject'));
         $email->body($emailTemplate->getLocalizedData('body'));
 
-        Mail::send($email);
+        return $email;
     }
 
-    private function getSubmission($slimRequest)
+    private function getManagersAssigned(Publication $publication): array
     {
-        $queryParams = $slimRequest->getQueryParams();
-        $submissionId = (int) $queryParams['submissionId'];
-
-        return Repo::submission()->get($submissionId);
-    }
-
-    private function getManagersAssigned($publication): array
-    {
-        $stageAssignmentDao = DAORegistry::getDAO('StageAssignmentDAO');
-        $allAssignments = $stageAssignmentDao->getBySubmissionAndStageId($publication->getData('submissionId'), WORKFLOW_STAGE_ID_PRODUCTION);
-        $managers = array();
-
-        while ($assignment = $allAssignments->next()) {
-            $userId = $assignment->getUserId();
-
-            if ($this->userIsManager($userId)) {
-                $manager = Repo::user()->get($userId);
-                $managers[] = [
-                    'email' => $manager->getEmail(),
-                    'name' => $manager->getFullName()
-                ];
+        $contextId = $this->getRequest()->getContext()->getId();
+        $userIds = StageAssignment::withSubmissionIds([$publication->getData('submissionId')])
+            ->withStageIds([WORKFLOW_STAGE_ID_PRODUCTION])
+            ->withContextId($contextId)
+            ->distinct()
+            ->pluck('stage_assignments.user_id');
+        $managers = [];
+        foreach ($userIds as $userId) {
+            $isManager = UserGroup::withContextIds($contextId)
+                ->withUserIds([(int) $userId])
+                ->where('role_id', Role::ROLE_ID_MANAGER)
+                ->exists();
+            if (!$isManager) {
+                continue;
             }
+            $manager = Repo::user()->get((int) $userId);
+            if (!$manager) {
+                continue;
+            }
+            $managers[] = ['email' => $manager->getEmail(), 'name' => $manager->getFullName()];
         }
 
         return $managers;
-    }
-
-    private function userIsManager($userId): bool
-    {
-        $userGroupsOfUser = Repo::userGroup()->getCollector()
-            ->filterByUserIds([$userId])
-            ->getMany();
-        $managerGroupName = 'preprint server manager';
-
-        foreach ($userGroupsOfUser as $userGroup) {
-            if (strtolower($userGroup->getName('en')) == $managerGroupName) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

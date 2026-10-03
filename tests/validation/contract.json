@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "application": "ops",
+  "target": "stable-3_5_0",
+  "php": ["8.2", "8.4"],
+  "checks": {
+    "syntax": "required",
+    "style": "required",
+    "unit": "required",
+    "locale": "required",
+    "integration": "required",
+    "authorization": "required",
+    "review": "required"
+  }
+}

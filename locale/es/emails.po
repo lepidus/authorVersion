@@ -1,3 +1,11 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Author Version Plugin\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: es\n"
+
 msgid "emails.submittedVersion.subject"
 msgstr "Presentada una nueva versión de preprint"
 

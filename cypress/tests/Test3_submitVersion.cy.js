@@ -1,3 +1,5 @@
+import '../support/commands.js';
+
 describe('Author Version - Submit new version', function () {
     let firstVersionJustification = 'created to test';
     let secondVersionJustification = 'created to test the plugin';
@@ -5,79 +7,65 @@ describe('Author Version - Submit new version', function () {
 
     it('Submit new version to moderators', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.get('#archive-button').click();
-        cy.contains('View Woods').click({force: true});
+        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
         cy.get('button:contains("Submit New Version")').click();
 
-        cy.get('h2:contains("Submit New Version")');
+        cy.contains('[data-cy="active-modal"] h1', 'Submit New Version').should('be.visible');
         cy.get('label:contains("Justification")');
         cy.contains('Inform moderators and readers of the justification for creating this version. This justification will be made public on the preprint page.');
-        cy.get('input[name="versionJustification"]').clear().type(firstVersionJustification, {delay: 0});
-        cy.get('form button:contains("Submit")').click();
-
-        cy.waitJQuery();
+        cy.saveAuthorVersionJustification(firstVersionJustification);
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
     });
     it('Moderator views version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.get('#newVersion-button').click();
-        cy.contains('View Woods').click({force: true});
-        cy.get('#publication-button').click();
+        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
     });
     it('Author edits version justification on workflow', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.get('#archive-button').click();
-        cy.contains('View Woods').click({force: true});
+        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
 
-        cy.get('input[name="versionJustification"]').clear().type(secondVersionJustification, {delay: 0});
-        cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
+        cy.saveAuthorVersionJustification(secondVersionJustification, 'versionJustification');
     });
     it('Moderator edits version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.get('#newVersion-button').click();
-        cy.contains('View Woods').click({force: true});
-        cy.get('#publication-button').click();
+        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', secondVersionJustification);
 
-        cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
-        cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
+        cy.saveAuthorVersionJustification(finalVersionJustification, 'versionJustification');
     });
     it('After posting new version - Cant edit justification; Justification shown in landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.get('#newVersion-button').click();
-        cy.contains('View Woods').click({force: true});
+        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
         
-        cy.get('#publication-button').click();
-        cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
-        cy.get('.pkp_modal_panel button:contains("Post")').click();
-        cy.reload();
+        cy.openWorkflowMenu('Title & Abstract');
+        cy.postAuthorVersion();
 
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('not.exist');
         cy.contains(finalVersionJustification);
 
-        cy.get('.pkpHeader__actions a:contains("View")').click();
+        cy.window().then(win => {
+            const publication = win.pkp.registry.getPiniaStore('workflow').selectedPublication;
+            cy.visit(publication.urlPublished);
+        });
         cy.get('h2:contains("Version justification")');
         cy.contains(finalVersionJustification);
     });
     it('Checks if version submission works if performed just after version creation', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.get('#archive-button').click();
-        cy.contains('View Woods').click({force: true});
-        cy.get('button:contains("Create New Version")').click();
-        cy.waitJQuery();
+        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.createAuthorVersion();
 
         cy.get('button:contains("Submit New Version")').click();
-        cy.get('input[name="versionJustification"]').clear().type(finalVersionJustification, {delay: 0});
-        cy.get('form button:contains("Submit")').click();
-        
-        cy.waitJQuery();
+        cy.saveAuthorVersionJustification(finalVersionJustification);
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', finalVersionJustification);
     });
