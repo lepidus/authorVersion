@@ -1,36 +1,37 @@
 import '../support/commands.js';
 
 describe('Author Version - Submission relations updating', function () {
+    let submissionTitle = 'Submission for testing Author Version plugin';
     let publishedArticleDoi = 'https://doi.org/10.1234/Non-existentDoi';
 
     it('Author can change relations on posted preprint version', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
         cy.get('button:contains("Relations")');
         cy.logout();
 
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
         cy.openWorkflowMenu('Title & Abstract');
         cy.postAuthorVersion();
         cy.contains('[data-cy="active-modal"]', 'Posted');
         cy.logout();
 
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
         cy.contains('[data-cy="active-modal"]', 'Posted');
         cy.get('button:contains("Relations")');
         cy.logout();
 
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Published');
+        cy.openAuthorVersionSubmission(submissionTitle, 'Published');
         cy.openWorkflowMenu('Title & Abstract');
         cy.unpostAuthorVersion();
         cy.contains('[data-cy="active-modal"]', 'Unpublished');
     });
     it('Author changes preprint relation to "published as an article"', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
         
         cy.get('button:contains("Relations")').click();
         cy.get('.pkpWorkflow__publicationRelation input[value="3"]').click();
@@ -44,7 +45,7 @@ describe('Author Version - Submission relations updating', function () {
     });
     it('Moderator posts last version of submission', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
         
         cy.openWorkflowMenu('Title & Abstract');
         cy.postAuthorVersion();
@@ -55,7 +56,7 @@ describe('Author Version - Submission relations updating', function () {
     });
     it('Author can not change relations or create new version anymore', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
 
         cy.get('button:contains("Relations")').should('not.exist');
         cy.contains('[data-cy="active-modal"] .authorVersion__relation', publishedArticleDoi).should('be.visible');

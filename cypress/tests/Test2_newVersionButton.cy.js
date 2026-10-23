@@ -32,13 +32,13 @@ describe('Author Version - Create new version', function () {
         cy.logout();
     });
     it('Post submission', function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Submission for testing Author Version plugin');
+        cy.findSubmissionAsEditor('dbarnes', null, submissionData.title);
         cy.openWorkflowMenu('Title & Abstract');
 		cy.postAuthorVersion();
     });
     it('Button to create new version', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionData.title, 'My Submissions as Author');
         cy.createAuthorVersion();
         cy.get('button:contains("Create New Version")').should('not.exist');
         

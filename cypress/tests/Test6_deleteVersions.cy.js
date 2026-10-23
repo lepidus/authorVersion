@@ -24,7 +24,7 @@ describe('Author Version - Delete versions', function () {
         cy.createSubmission(submissionData);
     });
     it("Moderator - Can't delete first version", function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Submission for testing deleting of versions');
+        cy.findSubmissionAsEditor('dbarnes', null, submissionData.title);
 		cy.openWorkflowMenu('Title & Abstract');
 
         cy.get('button:contains("Delete version")').should('not.exist');
@@ -32,7 +32,7 @@ describe('Author Version - Delete versions', function () {
     });
     it('Author - Creates and submits new version', function () {
         cy.login('fpaglieri', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing deleting of versions', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionData.title, 'My Submissions as Author');
         
         cy.createAuthorVersion();
         
@@ -41,7 +41,7 @@ describe('Author Version - Delete versions', function () {
     });
     it("Moderator - Checks can delete last version if it isn't posted", function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing deleting of versions', 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionData.title, 'Submissions with new version');
 		
         cy.openWorkflowMenu('Title & Abstract');
 
@@ -56,13 +56,13 @@ describe('Author Version - Delete versions', function () {
     });
     it('Author - Creates new version without submitting', function () {
         cy.login('fpaglieri', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing deleting of versions', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionData.title, 'My Submissions as Author');
         
         cy.createAuthorVersion();
     });
     it("Moderator - Deletes last version", function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing deleting of versions', 'Submissions with new version — Non-submitted');
+        cy.openAuthorVersionSubmission(submissionData.title, 'Submissions with new version — Non-submitted');
 		
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Delete version")').click();

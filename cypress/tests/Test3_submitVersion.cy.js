@@ -1,13 +1,14 @@
 import '../support/commands.js';
 
 describe('Author Version - Submit new version', function () {
+    let submissionTitle = 'Submission for testing Author Version plugin';
     let firstVersionJustification = 'created to test';
     let secondVersionJustification = 'created to test the plugin';
     let finalVersionJustification = 'Version was created to test the Author Version plugin';
 
     it('Submit new version to moderators', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
         cy.get('button:contains("Submit New Version")').click();
 
         cy.contains('[data-cy="active-modal"] h1', 'Submit New Version').should('be.visible');
@@ -19,14 +20,14 @@ describe('Author Version - Submit new version', function () {
     });
     it('Moderator views version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
     });
     it('Author edits version justification on workflow', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
 
@@ -34,7 +35,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('Moderator edits version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', secondVersionJustification);
@@ -43,7 +44,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('After posting new version - Cant edit justification; Justification shown in landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
         
         cy.openWorkflowMenu('Title & Abstract');
         cy.postAuthorVersion();
@@ -61,7 +62,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('Checks if version submission works if performed just after version creation', function () {
         cy.login('zwoods', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing Author Version plugin', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionTitle, 'My Submissions as Author');
         cy.createAuthorVersion();
 
         cy.get('button:contains("Submit New Version")').click();

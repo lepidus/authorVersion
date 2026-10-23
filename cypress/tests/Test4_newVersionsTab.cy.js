@@ -25,13 +25,13 @@ describe('Author Version - New versions tab', function () {
         cy.logout();
     });
     it('Post submission', function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Submission for testing new versions tab');
+        cy.findSubmissionAsEditor('dbarnes', null, submissionData.title);
         cy.openWorkflowMenu('Title & Abstract');
 		cy.postAuthorVersion();
     });
     it('Author creates new version', function () {
         cy.login('rrossi', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission('Submission for testing new versions tab', 'My Submissions as Author');
+        cy.openAuthorVersionSubmission(submissionData.title, 'My Submissions as Author');
         cy.createAuthorVersion();
     });
     it('Checks functioning of New Versions tab', function () {
