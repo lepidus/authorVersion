@@ -6,40 +6,9 @@ It also changes behavior for when a posted submission has its relations changed 
 
 ## Compatibility
 
-This development checkout targets **OPS 3.5.x**, with PHP 8.2 or later.
-The previous released version targets OPS 3.4.0. This plugin is specific to OPS;
-it does not declare support for OJS or OMP.
+The latest release of this plugin is compatible with the following PKP applications:
 
-The OPS 3.5 port uses Laravel API controllers and Vue 3 workflow extensions.
-Submitted and non-submitted versions are available as separate dashboard views.
-Version submission, justification edits and deletion apply to the latest draft.
-Authors create versions only from the latest posted publication. Each request
-identifies both the submission and publication, so a stale modal cannot change
-a newer version. Author creation and relation updates use dedicated endpoints
-with the native OPS context, submission and production-stage policies.
-
-## Development validation
-
-Fast endpoint and workflow regressions:
-
-```sh
-php tests/api/author-version-handler.php
-node tests/js/authorVersion.test.cjs
-```
-
-These isolated tests do not prove OPS authorization, persistence or browser integration.
-The OPS CI runs the database/PHPUnit suite and the Cypress workflows against 3.5:
-
-```sh
-# From an installed OPS checkout with the plugin physically copied into plugins/generic/authorVersion:
-lib/pkp/lib/vendor/bin/phpunit --configuration lib/pkp/tests/phpunit.xml --no-coverage plugins/generic/authorVersion/tests
-npx cypress run --spec 'plugins/generic/authorVersion/cypress/tests/**/*.cy.js'
-```
-
-The local validation target is declared in `tests/validation/ops-3.5.json`.
-See [the validation report](tests/validation/README.md) for the executed checks and their limits.
-Version and release metadata remain unchanged until a release is prepared.
-
+* OPS 3.5.0
 
 ## Plugin Download
 
