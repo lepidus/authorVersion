@@ -24,9 +24,6 @@ class AuthorVersionCreationController extends SubmissionController
 
     public function getGroupRoutes(): void
     {
-        // OPS registers this route with AUTHOR, then PKP's duplicate registration
-        // removes that role. A dedicated plugin endpoint preserves the OPS intent
-        // without changing the native editorial endpoints.
         Route::post('{submissionId}/publications/{publicationId}/version', $this->versionPublication(...))
             ->name('authorVersionCreation.publication.version')
             ->middleware(self::roleAuthorizer([Role::ROLE_ID_AUTHOR]))
