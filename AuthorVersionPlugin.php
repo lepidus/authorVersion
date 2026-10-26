@@ -91,6 +91,7 @@ class AuthorVersionPlugin extends GenericPlugin
         $controller = new AuthorVersionSubmissionsController();
         $handler->addRoute('GET', 'authorVersion', $controller->getMany(...), 'authorVersion.list', [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER]);
         $handler->addRoute('GET', 'authorVersionAssigned', $controller->assigned(...), 'authorVersion.assigned', [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR]);
+        $handler->addRoute('GET', 'authorVersionViewsCount', $controller->viewsCount(...), 'authorVersion.viewsCount', [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR]);
         return false;
     }
 
@@ -138,16 +139,39 @@ class AuthorVersionPlugin extends GenericPlugin
             if (!isset($menu[$menuId])) {
                 continue;
             }
+            $versionItems = [];
             foreach (['newVersion' => false, 'nonSubmittedVersion' => true] as $id => $nonSubmitted) {
-                $menu[$menuId]['submenu'][$id] = [
+                $versionItems[$id] = [
                     'id' => $id,
                     'name' => __('plugins.generic.authorVersion.newVersionSubmissions') . ($nonSubmitted ? ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions') : ''),
                     'isCurrent' => $request->getRequestedPage() === 'dashboard' && $request->getRequestedOp() === $op && $request->getUserVar('currentViewId') === $id,
                     'url' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'dashboard', $op, [], ['currentViewId' => $id]),
+                    'badge' => ['slot' => '-'],
                 ];
             }
+
+            $submenu = collect($menu[$menuId]['submenu'] ?? [])->all();
+            $newSubmission = $submenu['newSubmission'] ?? null;
+            unset($submenu['newSubmission']);
+
+            $submenu = array_merge($submenu, $versionItems);
+            if (!is_null($newSubmission)) {
+                $submenu['newSubmission'] = $newSubmission;
+            }
+
+            $menu[$menuId]['submenu'] = $submenu;
         }
         $templateMgr->setState(['menu' => $menu]);
+
+        $viewsCountUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), '_submissions/authorVersionViewsCount');
+        $templateMgr->addJavaScript('authorVersionViewsCountUrl', 'pkp.plugins = pkp.plugins || {}; pkp.plugins.authorVersionViewsCountUrl = ' . json_encode($viewsCountUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) . ';', [
+            'inline' => true,
+            'contexts' => ['backend'],
+        ]);
+        $templateMgr->addJavaScript('authorVersionViewsCount', $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/viewsCount.js', [
+            'contexts' => ['backend'],
+            'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+        ]);
         return false;
     }
 
