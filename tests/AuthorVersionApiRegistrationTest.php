@@ -43,7 +43,7 @@ class AuthorVersionApiRegistrationTest extends TestCase
     public function testListRoutesRegisterThroughExpandedHookArguments(): void
     {
         $handler = $this->createMock(APIHandler::class);
-        $handler->expects(self::exactly(2))->method('addRoute');
+        $handler->expects(self::exactly(3))->method('addRoute');
         $hook = 'AuthorVersion::test::listRoutes';
         Hook::add($hook, [new AuthorVersionPlugin(), 'setupVersionSubmissionLists']);
         try {
