@@ -25,6 +25,6 @@ To download the plugin, go to the [Releases page](https://github.com/lepidus/aut
 # License
 __This plugin is licensed under the GNU General Public License v3.0__
 
-__Copyright (c) 2020-2023 Lepidus Tecnologia__
+__Copyright (c) 2020-2026 Lepidus Tecnologia__
 
-__Copyright (c) 2020-2023 SciELO__
+__Copyright (c) 2020-2026 SciELO__
