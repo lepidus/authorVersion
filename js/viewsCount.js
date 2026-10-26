@@ -1,5 +1,4 @@
-// _submissions/viewsCount only knows about core views and exposes no hook for
-// custom ones, so its response is intercepted to merge in the plugin counts.
+// The core _submissions/viewsCount has no hook for plugin views, so its response is extended here.
 (function patchViewsCountFetch() {
     if (window.__authorVersionFetchPatched) {
         return;
@@ -8,42 +7,51 @@
 
     const originalFetch = window.fetch.bind(window);
     const VIEWS_COUNT_PATH = '/_submissions/viewsCount';
+    const AUTHOR_VERSION_VIEWS_COUNT_PATH = '/_submissions/authorVersionViewsCount';
 
-    function fetchAuthorVersionCounts(viewsCountUrl) {
-        const url = window.pkp?.plugins?.authorVersionViewsCountUrl;
-        if (!url) {
-            return Promise.resolve({});
+    function viewsCountUrl(input) {
+        const url = new URL(typeof input === 'string' ? input : input?.url || '', window.location.href);
+        if (!url.pathname.endsWith(VIEWS_COUNT_PATH)) {
+            return null;
         }
-        const countsUrl = new URL(url, window.location.href);
-        countsUrl.search = new URL(viewsCountUrl, window.location.href).search;
-        return originalFetch(countsUrl, {
+        const roles = url.searchParams.getAll('assignedWithRoles[]').map(Number);
+        return roles.includes(pkp.const.ROLE_ID_REVIEWER) ? null : url;
+    }
+
+    function fetchAuthorVersionCounts(url, signal) {
+        url.pathname = url.pathname.slice(0, -VIEWS_COUNT_PATH.length) + AUTHOR_VERSION_VIEWS_COUNT_PATH;
+        return originalFetch(url, {
             headers: {Accept: 'application/json'},
             credentials: 'same-origin',
+            signal,
         })
             .then((response) => (response.ok ? response.json() : {}))
-            .catch(() => ({}));
+            .catch((error) => {
+                if (signal?.aborted) {
+                    throw error;
+                }
+                return {};
+            });
     }
 
     window.fetch = async function (input, init) {
-        const url = typeof input === 'string' ? input : input?.url || '';
-        if (!url.includes(VIEWS_COUNT_PATH)) {
+        const url = viewsCountUrl(input);
+        if (!url) {
             return originalFetch(input, init);
         }
 
-        const response = await originalFetch(input, init);
-        try {
-            const [data, authorVersionCounts] = await Promise.all([
-                response.clone().json(),
-                fetchAuthorVersionCounts(url),
-            ]);
-            const merged = {...data, ...authorVersionCounts};
-            return new Response(JSON.stringify(merged), {
-                status: response.status,
-                statusText: response.statusText,
-                headers: {'Content-Type': 'application/json'},
-            });
-        } catch (error) {
+        const [response, authorVersionCounts] = await Promise.all([
+            originalFetch(input, init),
+            fetchAuthorVersionCounts(url, init?.signal),
+        ]);
+        if (!response.ok) {
             return response;
         }
+        const data = await response.json();
+        return new Response(JSON.stringify({...data, ...authorVersionCounts}), {
+            status: response.status,
+            statusText: response.statusText,
+            headers: {'Content-Type': 'application/json'},
+        });
     };
 })();

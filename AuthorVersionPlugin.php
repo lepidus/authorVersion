@@ -106,21 +106,22 @@ class AuthorVersionPlugin extends GenericPlugin
             ? 'authorVersion' : 'authorVersionAssigned';
         $assignedWithRoles = $isAuthorDashboard ? [Role::ROLE_ID_AUTHOR]
             : [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT];
-        $params[0][] = [
-            'id' => 'newVersion',
-            'name' => __('plugins.generic.authorVersion.newVersionSubmissions'),
-            'count' => 0,
-            'op' => $op,
-            'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles],
-        ];
-        $params[0][] = [
-            'id' => 'nonSubmittedVersion',
-            'name' => __('plugins.generic.authorVersion.newVersionSubmissions') . ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions'),
-            'count' => 0,
-            'op' => $op,
-            'queryParams' => ['newVersion' => 1, 'nonSubmitted' => 1, 'assignedWithRoles' => $assignedWithRoles],
-        ];
+        foreach (NewVersionSubmissionFilter::VIEWS as $id => $nonSubmitted) {
+            $params[0][] = [
+                'id' => $id,
+                'name' => $this->getViewName($nonSubmitted),
+                'count' => 0,
+                'op' => $op,
+                'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles] + ($nonSubmitted ? ['nonSubmitted' => 1] : []),
+            ];
+        }
         return false;
+    }
+
+    private function getViewName(bool $nonSubmitted): string
+    {
+        $name = __('plugins.generic.authorVersion.newVersionSubmissions');
+        return $nonSubmitted ? $name . ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions') : $name;
     }
 
     public function addVersionNavigation($hookName, $params)
@@ -140,10 +141,10 @@ class AuthorVersionPlugin extends GenericPlugin
                 continue;
             }
             $versionItems = [];
-            foreach (['newVersion' => false, 'nonSubmittedVersion' => true] as $id => $nonSubmitted) {
+            foreach (NewVersionSubmissionFilter::VIEWS as $id => $nonSubmitted) {
                 $versionItems[$id] = [
                     'id' => $id,
-                    'name' => __('plugins.generic.authorVersion.newVersionSubmissions') . ($nonSubmitted ? ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions') : ''),
+                    'name' => $this->getViewName($nonSubmitted),
                     'isCurrent' => $request->getRequestedPage() === 'dashboard' && $request->getRequestedOp() === $op && $request->getUserVar('currentViewId') === $id,
                     'url' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'dashboard', $op, [], ['currentViewId' => $id]),
                     'badge' => ['slot' => '-'],
@@ -162,12 +163,6 @@ class AuthorVersionPlugin extends GenericPlugin
             $menu[$menuId]['submenu'] = $submenu;
         }
         $templateMgr->setState(['menu' => $menu]);
-
-        $viewsCountUrl = $request->getDispatcher()->url($request, Application::ROUTE_API, $context->getPath(), '_submissions/authorVersionViewsCount');
-        $templateMgr->addJavaScript('authorVersionViewsCountUrl', 'pkp.plugins = pkp.plugins || {}; pkp.plugins.authorVersionViewsCountUrl = ' . json_encode($viewsCountUrl, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR) . ';', [
-            'inline' => true,
-            'contexts' => ['backend'],
-        ]);
         $templateMgr->addJavaScript('authorVersionViewsCount', $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/viewsCount.js', [
             'contexts' => ['backend'],
             'priority' => TemplateManager::STYLE_SEQUENCE_LAST,

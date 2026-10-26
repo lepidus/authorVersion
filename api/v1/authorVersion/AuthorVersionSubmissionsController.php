@@ -33,12 +33,11 @@ class AuthorVersionSubmissionsController extends BackendSubmissionsController
         }
 
         $assignedWithRoles = array_map(intval(...), paramToArray($illuminateRequest->query('assignedWithRoles', [])));
-        $userRoles = (array) $this->getAuthorizedContextObject(Application::ASSOC_TYPE_USER_ROLES);
         $isAuthorDashboard = $assignedWithRoles === [Role::ROLE_ID_AUTHOR];
-        $canAccessUnassignedSubmissions = !$isAuthorDashboard && array_intersect([Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER], $userRoles);
+        $canAccessUnassignedSubmissions = !$isAuthorDashboard && $this->canAccessAllSubmissions();
 
         $counts = [];
-        foreach (['newVersion' => false, 'nonSubmittedVersion' => true] as $viewId => $nonSubmitted) {
+        foreach (NewVersionSubmissionFilter::VIEWS as $viewId => $nonSubmitted) {
             $collector = $this->getSubmissionCollector(['nonSubmitted' => $nonSubmitted]);
             if (!$canAccessUnassignedSubmissions) {
                 $collector->assignedTo([$request->getUser()->getId()], $assignedWithRoles ?: null);
