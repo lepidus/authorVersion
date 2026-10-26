@@ -11,6 +11,8 @@ use WeakMap;
 
 class NewVersionSubmissionFilter
 {
+    public const VIEWS = ['newVersion' => false, 'nonSubmittedVersion' => true];
+
     private static ?WeakMap $collectors = null;
 
     public static function register(Collector $collector, bool $nonSubmitted): void

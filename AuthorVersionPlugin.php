@@ -91,6 +91,7 @@ class AuthorVersionPlugin extends GenericPlugin
         $controller = new AuthorVersionSubmissionsController();
         $handler->addRoute('GET', 'authorVersion', $controller->getMany(...), 'authorVersion.list', [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER]);
         $handler->addRoute('GET', 'authorVersionAssigned', $controller->assigned(...), 'authorVersion.assigned', [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR]);
+        $handler->addRoute('GET', 'authorVersionViewsCount', $controller->viewsCount(...), 'authorVersion.viewsCount', [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT, Role::ROLE_ID_AUTHOR]);
         return false;
     }
 
@@ -105,21 +106,22 @@ class AuthorVersionPlugin extends GenericPlugin
             ? 'authorVersion' : 'authorVersionAssigned';
         $assignedWithRoles = $isAuthorDashboard ? [Role::ROLE_ID_AUTHOR]
             : [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT];
-        $params[0][] = [
-            'id' => 'newVersion',
-            'name' => __('plugins.generic.authorVersion.newVersionSubmissions'),
-            'count' => 0,
-            'op' => $op,
-            'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles],
-        ];
-        $params[0][] = [
-            'id' => 'nonSubmittedVersion',
-            'name' => __('plugins.generic.authorVersion.newVersionSubmissions') . ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions'),
-            'count' => 0,
-            'op' => $op,
-            'queryParams' => ['newVersion' => 1, 'nonSubmitted' => 1, 'assignedWithRoles' => $assignedWithRoles],
-        ];
+        foreach (NewVersionSubmissionFilter::VIEWS as $id => $nonSubmitted) {
+            $params[0][] = [
+                'id' => $id,
+                'name' => $this->getViewName($nonSubmitted),
+                'count' => 0,
+                'op' => $op,
+                'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles] + ($nonSubmitted ? ['nonSubmitted' => 1] : []),
+            ];
+        }
         return false;
+    }
+
+    private function getViewName(bool $nonSubmitted): string
+    {
+        $name = __('plugins.generic.authorVersion.newVersionSubmissions');
+        return $nonSubmitted ? $name . ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions') : $name;
     }
 
     public function addVersionNavigation($hookName, $params)
@@ -138,16 +140,33 @@ class AuthorVersionPlugin extends GenericPlugin
             if (!isset($menu[$menuId])) {
                 continue;
             }
-            foreach (['newVersion' => false, 'nonSubmittedVersion' => true] as $id => $nonSubmitted) {
-                $menu[$menuId]['submenu'][$id] = [
+            $versionItems = [];
+            foreach (NewVersionSubmissionFilter::VIEWS as $id => $nonSubmitted) {
+                $versionItems[$id] = [
                     'id' => $id,
-                    'name' => __('plugins.generic.authorVersion.newVersionSubmissions') . ($nonSubmitted ? ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions') : ''),
+                    'name' => $this->getViewName($nonSubmitted),
                     'isCurrent' => $request->getRequestedPage() === 'dashboard' && $request->getRequestedOp() === $op && $request->getUserVar('currentViewId') === $id,
                     'url' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'dashboard', $op, [], ['currentViewId' => $id]),
+                    'badge' => ['slot' => '-'],
                 ];
             }
+
+            $submenu = collect($menu[$menuId]['submenu'] ?? [])->all();
+            $newSubmission = $submenu['newSubmission'] ?? null;
+            unset($submenu['newSubmission']);
+
+            $submenu = array_merge($submenu, $versionItems);
+            if (!is_null($newSubmission)) {
+                $submenu['newSubmission'] = $newSubmission;
+            }
+
+            $menu[$menuId]['submenu'] = $submenu;
         }
         $templateMgr->setState(['menu' => $menu]);
+        $templateMgr->addJavaScript('authorVersionViewsCount', $request->getBaseUrl() . '/' . $this->getPluginPath() . '/js/viewsCount.js', [
+            'contexts' => ['backend'],
+            'priority' => TemplateManager::STYLE_SEQUENCE_LAST,
+        ]);
         return false;
     }
 
