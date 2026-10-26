@@ -14,7 +14,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use PKP\security\Role;
 
-/** Author version creation with the native OPS policies and notification flow. */
 class AuthorVersionCreationController extends SubmissionController
 {
     public function getHandlerPath(): string

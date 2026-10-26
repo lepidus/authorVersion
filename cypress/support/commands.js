@@ -1,4 +1,3 @@
-// Keep failures bounded even when the core data suite uses a much longer timeout.
 Cypress.config('defaultCommandTimeout', 15000);
 
 function beginSubmission(submissionData) {
@@ -24,8 +23,6 @@ function filesStep(submissionData) {
     cy.contains('button', 'Continue').click();
 }
 
-// Upload through the OPS galley wizard. Advance only after each form has loaded
-// and the corresponding request has completed, rather than counting clicks.
 Cypress.Commands.add('addAuthorVersionGalleys', (files) => {
     files.forEach(file => {
         cy.intercept('POST', /\/(update-galley|updateGalley)(?:[/?]|$)/).as('saveAuthorVersionGalley');
@@ -55,7 +52,6 @@ Cypress.Commands.add('addAuthorVersionGalleys', (files) => {
             .should('be.enabled').click();
         cy.wait('@loadAuthorVersionFileMetadata').its('response.statusCode').should('eq', 200);
 
-        // Populate the required name and trigger validation in the metadata step.
         cy.get('[id^="metadataForm"]:visible input[id^="name-"]:visible')
             .first().clear().type(file.fileName, {delay: 0}).blur();
         Object.entries(file.metadata || {}).forEach(([field, value]) => {
@@ -91,12 +87,9 @@ Cypress.Commands.add('createSubmission', function(submissionData) {
     cy.contains('h1', 'Submission complete');
 });
 
-// OPS 3.5 displays submissions in dashboard tables and opens workflow side modals.
 Cypress.Commands.add('openAuthorVersionSubmission', (title, view = 'My Submissions as Author') => {
     cy.contains('nav a', view).click();
     if (view === 'My Submissions as Author') {
-        // The default author view excludes posted preprints. Resolve the owner's
-        // submission through the native assigned API without a status filter.
         cy.request({
             url: 'index.php/publicknowledge/api/v1/_submissions/assigned',
             qs: {searchPhrase: title, 'assignedWithRoles[]': 65536},

@@ -18,7 +18,6 @@ use PKP\security\Role;
 use PKP\services\PKPSchemaService;
 use PKP\userGroup\UserGroup;
 
-/** Author relations with native OPS production access and schema validation. */
 class AuthorVersionRelationsController extends SubmissionController
 {
     public function getHandlerPath(): string
@@ -52,7 +51,6 @@ class AuthorVersionRelationsController extends SubmissionController
             return response()->json([], Response::HTTP_BAD_REQUEST);
         }
 
-        // Follow the native relate endpoint's accepted fields and schema validation.
         $params = array_intersect_key($illuminateRequest->input(), array_flip(['relationStatus', 'vorDoi']));
         $params = $this->convertStringsToSchema(PKPSchemaService::SCHEMA_PUBLICATION, $params);
         if (!isset($params['relationStatus'])) {
@@ -70,8 +68,6 @@ class AuthorVersionRelationsController extends SubmissionController
             return response()->json(['error' => __('api.404.resourceNotFound')], Response::HTTP_NOT_FOUND);
         }
 
-        // Native OPS 3.5 passes a nested array here, which Laravel whereIn rejects
-        // after the relation has already been saved. Keep context IDs flat.
         $userGroups = UserGroup::withContextIds([$context->getId()])->get();
         $genres = DAORegistry::getDAO('GenreDAO')->getByContextId($context->getId())->toAssociativeArray();
 

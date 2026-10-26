@@ -11,7 +11,6 @@ use WeakMap;
 
 class NewVersionSubmissionFilter
 {
-    /** @var WeakMap<Collector, bool>|null */
     private static ?WeakMap $collectors = null;
 
     public static function register(Collector $collector, bool $nonSubmitted): void
