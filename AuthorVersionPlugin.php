@@ -120,8 +120,9 @@ class AuthorVersionPlugin extends GenericPlugin
 
     private function getViewName(bool $nonSubmitted): string
     {
-        $name = __('plugins.generic.authorVersion.newVersionSubmissions');
-        return $nonSubmitted ? $name . ' — ' . __('plugins.generic.authorVersion.nonSubmittedVersions') : $name;
+        return $nonSubmitted
+            ? __('plugins.generic.authorVersion.nonSubmittedNewVersions')
+            : __('plugins.generic.authorVersion.newVersions');
     }
 
     public function addVersionNavigation($hookName, $params)

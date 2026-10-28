@@ -35,11 +35,8 @@ msgstr "Informe a justificativa para a criação dessa versão para moderadores 
 msgid "plugins.generic.authorVersion.newVersions"
 msgstr "Novas versões"
 
-msgid "plugins.generic.authorVersion.newVersionSubmissions"
-msgstr "Submissões com nova versão"
-
-msgid "plugins.generic.authorVersion.nonSubmittedVersions"
-msgstr "Não submetidas"
+msgid "plugins.generic.authorVersion.nonSubmittedNewVersions"
+msgstr "Novas versões não submetidas"
 
 msgid "plugins.generic.authorVersion.deleteVersion"
 msgstr "Excluir versão"
