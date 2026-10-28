@@ -20,7 +20,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('Moderator views version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'New versions');
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
@@ -35,7 +35,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('Moderator edits version justification on workflow', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'New versions');
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', secondVersionJustification);
@@ -44,7 +44,7 @@ describe('Author Version - Submit new version', function () {
     });
     it('After posting new version - Cant edit justification; Justification shown in landing page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'New versions');
         
         cy.openWorkflowMenu('Title & Abstract');
         cy.postAuthorVersion();

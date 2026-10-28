@@ -41,7 +41,7 @@ describe('Author Version - Delete versions', function () {
     });
     it("Moderator - Checks can delete last version if it isn't posted", function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionData.title, 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionData.title, 'New versions');
 		
         cy.openWorkflowMenu('Title & Abstract');
 
@@ -62,7 +62,7 @@ describe('Author Version - Delete versions', function () {
     });
     it("Moderator - Deletes last version", function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionData.title, 'Submissions with new version — Non-submitted');
+        cy.openAuthorVersionSubmission(submissionData.title, 'Non-submitted new versions');
 		
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Delete version")').click();

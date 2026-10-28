@@ -11,7 +11,7 @@ describe('Author Version - Submission relations updating', function () {
         cy.logout();
 
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'New versions');
         cy.openWorkflowMenu('Title & Abstract');
         cy.postAuthorVersion();
         cy.contains('[data-cy="active-modal"]', 'Posted');
@@ -45,7 +45,7 @@ describe('Author Version - Submission relations updating', function () {
     });
     it('Moderator posts last version of submission', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionTitle, 'Submissions with new version');
+        cy.openAuthorVersionSubmission(submissionTitle, 'New versions');
         
         cy.openWorkflowMenu('Title & Abstract');
         cy.postAuthorVersion();

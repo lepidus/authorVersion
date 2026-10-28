@@ -36,13 +36,13 @@ describe('Author Version - New versions tab', function () {
     });
     it('Checks functioning of New Versions tab', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.contains('nav a', 'Submissions with new version').click();
+        cy.contains('nav a', 'New versions').click();
 
         cy.contains('Woods');
         cy.contains('Submission for testing Author Version plugin');
         cy.get('table tbody tr').should('have.length', 1);
 
-        cy.contains('nav a', 'Submissions with new version — Non-submitted').click();
+        cy.contains('nav a', 'Non-submitted new versions').click();
 
         cy.contains('Rossi');
         cy.contains(submissionData.title);
