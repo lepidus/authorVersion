@@ -1,8 +1,9 @@
-.pkpPublication__versionJustification {
-    margin: 0 0.5rem 0 0;
+.authorVersion__justification {
+    max-width: 30rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
-.pkpWorkflow__versionJustification .pkpDropdown__content {
-	min-width: 25em;
-	max-width: 25em;
+.authorVersion__relation {
+    overflow-wrap: anywhere;
 }

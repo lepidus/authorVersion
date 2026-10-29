@@ -14,5 +14,7 @@
     
     const publishedBlock = document.getElementsByClassName("item published")[0];
     const justificationBlock = document.getElementsByClassName('item versionJustification')[0];
-    insertAfter(justificationBlock, publishedBlock);
+    if (publishedBlock && justificationBlock) {ldelim}
+        insertAfter(justificationBlock, publishedBlock);
+    {rdelim}
 </script>

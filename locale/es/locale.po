@@ -36,12 +36,6 @@ msgstr "Indique a los moderadores y lectores la justificación de la creación d
 msgid "plugins.generic.authorVersion.newVersions"
 msgstr "Nuevas versiones"
 
-msgid "plugins.generic.authorVersion.newVersionSubmissions"
-msgstr "Envíos con nueva versión"
-
-msgid "plugins.generic.authorVersion.nonSubmittedVersions"
-msgstr "No enviadas"
-
 msgid "plugins.generic.authorVersion.deleteVersion"
 msgstr "Eliminar versión"
 

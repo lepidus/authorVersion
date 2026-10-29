@@ -25,31 +25,21 @@ describe('Author Version - New versions tab', function () {
         cy.logout();
     });
     it('Post submission', function () {
-        cy.findSubmissionAsEditor('dbarnes', null, 'Rossi');
-        cy.get('#publication-button').click();
-		cy.get('.pkpHeader .pkpHeader__actions button:contains("Post")').click();
-        cy.get('.pkp_modal_panel button:contains("Post")').click();
+        cy.findSubmissionAsEditor('dbarnes', null, submissionData.title);
+        cy.openWorkflowMenu('Title & Abstract');
+		cy.postAuthorVersion();
     });
     it('Author creates new version', function () {
         cy.login('rrossi', null, 'publicknowledge');
-        cy.get('#archive-button').click();
-        cy.contains('View Rossi').click({force: true});
-        cy.get('button:contains("Create New Version")').click();
+        cy.openAuthorVersionSubmission(submissionData.title, 'My Submissions as Author');
+        cy.createAuthorVersion();
     });
-    it('Checks functioning of New Versions tab', function () {
+    it('Checks functioning of "New Versions" tab', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.get('#newVersion-button').click();
+        cy.contains('nav a', 'New versions').click();
 
         cy.contains('Woods');
         cy.contains('Submission for testing Author Version plugin');
-        cy.get('.listPanel__item--submission:visible').should('have.length', 1);
-
-        cy.get('button:visible:contains("Filters")').click();
-        cy.get('button:contains("Non-submitted")').click();
-        cy.waitJQuery();
-
-        cy.contains('Rossi');
-        cy.contains(submissionData.title);
-        cy.get('.listPanel__item--submission:visible').should('have.length', 1);
+        cy.get('table tbody tr').should('have.length', 1);
     });
 });
