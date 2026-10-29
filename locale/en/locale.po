@@ -35,9 +35,6 @@ msgstr "Inform moderators and readers of the justification for creating this ver
 msgid "plugins.generic.authorVersion.newVersions"
 msgstr "New versions"
 
-msgid "plugins.generic.authorVersion.nonSubmittedNewVersions"
-msgstr "Non-submitted new versions"
-
 msgid "plugins.generic.authorVersion.deleteVersion"
 msgstr "Delete version"
 
