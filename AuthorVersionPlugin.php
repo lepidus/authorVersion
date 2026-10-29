@@ -109,7 +109,7 @@ class AuthorVersionPlugin extends GenericPlugin
             'id' => 'newVersion',
             'name' => __('plugins.generic.authorVersion.newVersions'),
             'count' => 0,
-            'op' => $op,    
+            'op' => $op,
             'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles],
         ];
 

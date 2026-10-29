@@ -62,7 +62,7 @@ describe('Author Version - Delete versions', function () {
     });
     it("Moderator - Deletes last version", function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.openAuthorVersionSubmission(submissionData.title, 'Active submissions');
+        cy.openAuthorVersionSubmission(submissionData.title, 'Published');
 		
         cy.openWorkflowMenu('Title & Abstract');
         cy.get('button:contains("Delete version")').click();
