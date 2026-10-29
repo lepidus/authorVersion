@@ -11,8 +11,6 @@ use WeakMap;
 
 class NewVersionSubmissionFilter
 {
-    public const VIEWS = ['newVersion' => false, 'nonSubmittedVersion' => true];
-
     private static ?WeakMap $collectors = null;
 
     public static function register(Collector $collector, bool $nonSubmitted): void
@@ -28,8 +26,6 @@ class NewVersionSubmissionFilter
             return false;
         }
         $nonSubmitted = self::$collectors[$collector];
-        // EXISTS preserves pagination/counts even if several unpublished versions exist.
-        // Exclude superseded drafts: only the latest version is actionable.
         $query->whereExists(function (Builder $query) use ($nonSubmitted): void {
             $query->selectRaw('1')->from('publications as nvp')
                 ->whereColumn('nvp.submission_id', 's.submission_id')

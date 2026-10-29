@@ -20,7 +20,8 @@ class NewVersionDashboardViewsTest extends PKPTestCase
         $views = $this->views('mySubmissions', [Role::ROLE_ID_MANAGER, Role::ROLE_ID_AUTHOR]);
         self::assertSame('authorVersionAssigned', $views[0]['op']);
         self::assertSame([Role::ROLE_ID_AUTHOR], $views[0]['queryParams']['assignedWithRoles']);
-        self::assertSame(1, $views[1]['queryParams']['nonSubmitted']);
+        self::assertCount(1, $views);
+        self::assertArrayNotHasKey('nonSubmitted', $views[0]['queryParams']);
     }
 
     public function testEditorialDashboardRetainsCoreManagerAndEditorScope(): void

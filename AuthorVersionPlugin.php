@@ -20,7 +20,6 @@ use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
 use PKP\security\Role;
 
-/** Author-submitted publication versions for OPS 3.5. */
 class AuthorVersionPlugin extends GenericPlugin
 {
     public function register($category, $path, $mainContextId = null)
@@ -106,23 +105,15 @@ class AuthorVersionPlugin extends GenericPlugin
             ? 'authorVersion' : 'authorVersionAssigned';
         $assignedWithRoles = $isAuthorDashboard ? [Role::ROLE_ID_AUTHOR]
             : [Role::ROLE_ID_SITE_ADMIN, Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT];
-        foreach (NewVersionSubmissionFilter::VIEWS as $id => $nonSubmitted) {
-            $params[0][] = [
-                'id' => $id,
-                'name' => $this->getViewName($nonSubmitted),
-                'count' => 0,
-                'op' => $op,
-                'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles] + ($nonSubmitted ? ['nonSubmitted' => 1] : []),
-            ];
-        }
-        return false;
-    }
+        $params[0][] = [
+            'id' => 'newVersion',
+            'name' => __('plugins.generic.authorVersion.newVersions'),
+            'count' => 0,
+            'op' => $op,    
+            'queryParams' => ['newVersion' => 1, 'assignedWithRoles' => $assignedWithRoles],
+        ];
 
-    private function getViewName(bool $nonSubmitted): string
-    {
-        return $nonSubmitted
-            ? __('plugins.generic.authorVersion.nonSubmittedNewVersions')
-            : __('plugins.generic.authorVersion.newVersions');
+        return false;
     }
 
     public function addVersionNavigation($hookName, $params)
@@ -141,22 +132,19 @@ class AuthorVersionPlugin extends GenericPlugin
             if (!isset($menu[$menuId])) {
                 continue;
             }
-            $versionItems = [];
-            foreach (NewVersionSubmissionFilter::VIEWS as $id => $nonSubmitted) {
-                $versionItems[$id] = [
-                    'id' => $id,
-                    'name' => $this->getViewName($nonSubmitted),
-                    'isCurrent' => $request->getRequestedPage() === 'dashboard' && $request->getRequestedOp() === $op && $request->getUserVar('currentViewId') === $id,
-                    'url' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'dashboard', $op, [], ['currentViewId' => $id]),
-                    'badge' => ['slot' => '-'],
-                ];
-            }
+            $newVersionMenu['newVersion'] = [
+                'id' => 'newVersion',
+                'name' => __('plugins.generic.authorVersion.newVersions'),
+                'isCurrent' => $request->getRequestedPage() === 'dashboard' && $request->getRequestedOp() === $op && $request->getUserVar('currentViewId') === 'newVersion',
+                'url' => $request->getDispatcher()->url($request, Application::ROUTE_PAGE, $context->getPath(), 'dashboard', $op, [], ['currentViewId' => 'newVersion']),
+                'badge' => ['slot' => '-'],
+            ];
 
             $submenu = collect($menu[$menuId]['submenu'] ?? [])->all();
             $newSubmission = $submenu['newSubmission'] ?? null;
             unset($submenu['newSubmission']);
 
-            $submenu = array_merge($submenu, $versionItems);
+            $submenu = array_merge($submenu, $newVersionMenu);
             if (!is_null($newSubmission)) {
                 $submenu['newSubmission'] = $newSubmission;
             }
