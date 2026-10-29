@@ -87,7 +87,6 @@ class AuthorVersionPlugin extends GenericPlugin
         return false;
     }
 
-    /** Apply the author relation lock to both native and plugin API writes. */
     public function validateLockedPublicationRelation($hookName, $params): bool
     {
         [, $publication, $props] = $params;
@@ -97,12 +96,12 @@ class AuthorVersionPlugin extends GenericPlugin
             || (int) $publication->getData('relationStatus') !== Publication::PUBLICATION_RELATION_PUBLISHED
             || !array_intersect(['relationStatus', 'vorDoi'], array_keys($props))
         ) {
-            return false;
+            return Hook::CONTINUE;
         }
 
         $request = Application::get()->getRequest();
         if (!$request->getRouter() instanceof APIRouter) {
-            return false;
+            return Hook::CONTINUE;
         }
 
         $controller = PKPBaseController::getRouteController();
@@ -115,7 +114,6 @@ class AuthorVersionPlugin extends GenericPlugin
                 && (int) $submission->getId() === (int) $publication->getData('submissionId')
                 && isset($authorizedContext[Application::ASSOC_TYPE_USER_ROLES])
             ) {
-                // Reuse native production access, excluding the author capability.
                 $policy = new StageRolePolicy(
                     [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR, Role::ROLE_ID_ASSISTANT],
                     WORKFLOW_STAGE_ID_PRODUCTION,
@@ -127,15 +125,13 @@ class AuthorVersionPlugin extends GenericPlugin
         }
 
         if (!$permitted) {
-            // Even an unchanged status can clear the DOI when the native route
-            // receives no vorDoi. Protect field presence, not just value changes.
             foreach (['relationStatus', 'vorDoi'] as $field) {
                 if (array_key_exists($field, $props)) {
                     $params[0][$field][] = __('api.submissions.403.userCantEdit');
                 }
             }
         }
-        return false;
+        return Hook::CONTINUE;
     }
 
     public function setupAuthorVersionHandler($hookName, $router)
