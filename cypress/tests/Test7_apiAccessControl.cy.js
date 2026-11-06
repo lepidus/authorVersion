@@ -48,4 +48,16 @@ describe('Author Version - API access control', function () {
                 .its('status').should('be.oneOf', deniedStatuses);
         });
     });
+    it('Authorized moderator gets 400 for justifications that are not text', function () {
+        getCsrfTokenAs('dbarnes').then((csrfToken) => {
+            postToAuthorVersionApi('submitVersion', csrfToken, {versionJustification: ['not', 'text']})
+                .its('status').should('eq', 400);
+            postToAuthorVersionApi('versionJustification', csrfToken, {versionJustification: {text: 'not text'}})
+                .its('status').should('eq', 400);
+            postToAuthorVersionApi('deleteVersion', csrfToken, {deletingJustification: ['not', 'text']})
+                .its('status').should('eq', 400);
+            postToAuthorVersionApi('versionJustification', csrfToken, {versionJustification: '   '})
+                .its('status').should('eq', 400);
+        });
+    });
 });
