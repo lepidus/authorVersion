@@ -33,14 +33,21 @@ class AuthorVersionHandler extends APIHandler
 
     public function authorize($request, &$args, $roleAssignments)
     {
-        import('lib.pkp.classes.security.authorization.PolicySet');
-        $rolePolicy = new PolicySet(COMBINING_PERMIT_OVERRIDES);
+        $routeName = $this->getSlimRequest()->getAttribute('route')->getName();
 
-        import('lib.pkp.classes.security.authorization.RoleBasedHandlerOperationPolicy');
-        foreach ($roleAssignments as $role => $operations) {
-            $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
+        import('lib.pkp.classes.security.authorization.ContextAccessPolicy');
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+
+        import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        // Same production stage access required by the OPS versionPublication endpoint
+        $stageRoles = [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR];
+        if ($routeName !== 'deleteVersion') {
+            $stageRoles[] = ROLE_ID_AUTHOR;
         }
-        $this->addPolicy($rolePolicy);
+        import('lib.pkp.classes.security.authorization.StageRolePolicy');
+        $this->addPolicy(new StageRolePolicy($stageRoles, WORKFLOW_STAGE_ID_PRODUCTION, false));
 
         return parent::authorize($request, $args, $roleAssignments);
     }
@@ -49,7 +56,7 @@ class AuthorVersionHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $versionJustification = $requestParams['versionJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
         if (!is_null($publication->getData('versionJustification'))
@@ -71,7 +78,7 @@ class AuthorVersionHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $deletingJustification = $requestParams['deletingJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
         if ($publication->getData('status') == STATUS_PUBLISHED or $publication->getData('version') == 1) {
@@ -88,7 +95,7 @@ class AuthorVersionHandler extends APIHandler
     {
         $requestParams = $slimRequest->getParsedBody();
         $versionJustification = $requestParams['versionJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
         if ($publication->getData('status') == STATUS_PUBLISHED || $publication->getData('version') == 1) {
@@ -155,15 +162,6 @@ class AuthorVersionHandler extends APIHandler
         }
 
         $email->sendWithParams($params);
-    }
-
-    private function getSubmission($slimRequest)
-    {
-        $queryParams = $slimRequest->getQueryParams();
-        $submissionId = (int) $queryParams['submissionId'];
-
-        $submissionService = Services::get('submission');
-        return $submissionService->get($submissionId);
     }
 
     private function getManagersAssigned($publication): array
