@@ -1,6 +1,11 @@
 import '../support/commands.js';
 
 describe('Author Version - Delete versions', function () {
+    beforeEach(function () {
+        // Drop any session left by a request still running when the previous test ended
+        cy.logout();
+    });
+
     let submissionData;
 
     before(function() {
