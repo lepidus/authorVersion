@@ -54,8 +54,11 @@ class AuthorVersionHandler extends APIHandler
 
     public function submitVersion($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
-        $versionJustification = $requestParams['versionJustification'];
+        $requestParams = (array) $slimRequest->getParsedBody();
+        $versionJustification = $requestParams['versionJustification'] ?? null;
+        if (!$this->isValidJustification($versionJustification)) {
+            return $response->withStatus(400);
+        }
         $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
@@ -76,8 +79,11 @@ class AuthorVersionHandler extends APIHandler
 
     public function deleteVersion($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
-        $deletingJustification = $requestParams['deletingJustification'];
+        $requestParams = (array) $slimRequest->getParsedBody();
+        $deletingJustification = $requestParams['deletingJustification'] ?? null;
+        if (!$this->isValidJustification($deletingJustification)) {
+            return $response->withStatus(400);
+        }
         $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
@@ -93,8 +99,11 @@ class AuthorVersionHandler extends APIHandler
 
     public function updateVersionJustification($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
-        $versionJustification = $requestParams['versionJustification'];
+        $requestParams = (array) $slimRequest->getParsedBody();
+        $versionJustification = $requestParams['versionJustification'] ?? null;
+        if (!$this->isValidJustification($versionJustification)) {
+            return $response->withStatus(400);
+        }
         $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
@@ -162,6 +171,11 @@ class AuthorVersionHandler extends APIHandler
         }
 
         $email->sendWithParams($params);
+    }
+
+    private function isValidJustification($justification): bool
+    {
+        return is_string($justification) && trim($justification) !== '';
     }
 
     private function getManagersAssigned($publication): array
