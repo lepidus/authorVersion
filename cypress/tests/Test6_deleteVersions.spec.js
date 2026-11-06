@@ -1,4 +1,9 @@
 describe('Author Version - Delete versions', function () {
+    beforeEach(function () {
+        // Drop any session left by a request still running when the previous test ended
+        cy.logout();
+    });
+
     let submissionData;
     const markupJustification = 'Valid reason <b class="injectedJustificationMarkup">to submit</b> a version';
 

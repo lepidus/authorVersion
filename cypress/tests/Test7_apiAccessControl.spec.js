@@ -1,4 +1,9 @@
 describe('Author Version - API access control', function () {
+    beforeEach(function () {
+        // Drop any session left by a request still running when the previous test ended
+        cy.logout();
+    });
+
     const deniedStatuses = [403, 404];
     let submissionId;
 

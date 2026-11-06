@@ -1,4 +1,9 @@
 describe('Author Version - Submit new version', function () {
+    beforeEach(function () {
+        // Drop any session left by a request still running when the previous test ended
+        cy.logout();
+    });
+
     let firstVersionJustification = 'created to test';
     let secondVersionJustification = 'created to test the plugin';
     let finalVersionJustification = 'Version was created to test the Author Version plugin';
