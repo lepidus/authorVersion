@@ -118,7 +118,7 @@ class AuthorVersionHandler extends APIHandler
         $params = [
             'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
             'linkToSubmission' => $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'workflow', 'access', $publication->getData('submissionId')),
-            'versionJustification' => $versionJustification
+            'versionJustification' => htmlspecialchars($versionJustification, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
         ];
 
         $this->sendEmailTemplate($emailTemplate, $managers, $params);
@@ -143,7 +143,7 @@ class AuthorVersionHandler extends APIHandler
         $params = [
             'submissionTitle' => htmlspecialchars($publication->getLocalizedFullTitle()),
             'linkToSubmission' => $request->getDispatcher()->url($request, ROUTE_PAGE, $context->getPath(), 'authorDashboard', 'submission', $publication->getData('submissionId')),
-            'deletingJustification' => $deletingJustification
+            'deletingJustification' => htmlspecialchars($deletingJustification, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
         ];
 
         $this->sendEmailTemplate($emailTemplate, $recipients, $params);
