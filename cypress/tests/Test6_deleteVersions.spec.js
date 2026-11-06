@@ -101,15 +101,10 @@ describe('Author Version - Delete versions', function () {
     });
     it('Version justification is shown as plain text on the preprint page', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.visit('index.php/publicknowledge/user/profile');
-        cy.request('index.php/publicknowledge/api/v1/submissions?count=100').then((response) => {
-            const submission = response.body.items.find(
-                (item) => JSON.stringify(item).includes(submissionData.title)
-            );
-            expect(submission, 'submission created by fpaglieri').to.exist;
-            cy.logout();
-            cy.visit('index.php/publicknowledge/preprint/view/' + submission.id);
-        });
+        cy.get('#archive-button').click();
+        cy.contains('View Paglieri').click({force: true});
+        cy.get('#publication-button').click();
+        cy.get('.pkpHeader__actions a:contains("View")').click();
 
         cy.get('.versionJustification .value').should('contain', markupJustification);
         cy.get('.versionJustification .injectedJustificationMarkup').should('not.exist');
