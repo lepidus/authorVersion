@@ -20,6 +20,7 @@ class SubmittedVersionNotification extends Mailable
     public function __construct(Server $context, Submission $submission, array $variables)
     {
         parent::__construct([$context, $submission]);
+        $variables['versionJustification'] = htmlspecialchars($variables['versionJustification'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $this->addData($variables);
     }
 }
