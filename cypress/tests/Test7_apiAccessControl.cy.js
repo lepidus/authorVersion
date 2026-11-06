@@ -21,10 +21,8 @@ describe('Author Version - API access control', function () {
     before(function () {
         getCsrfTokenAs('dbarnes');
         cy.request('index.php/publicknowledge/api/v1/submissions?count=100').then((response) => {
-            const submission = response.body.items.find(
-                (item) => JSON.stringify(item).includes('Submission for testing Author Version plugin')
-            );
-            expect(submission, 'submission created by zwoods in Test2').to.exist;
+            const submission = response.body.items.find((item) => JSON.stringify(item).includes('Woods'));
+            expect(submission, 'submission authored by zwoods').to.exist;
             submissionId = submission.id;
         });
     });
