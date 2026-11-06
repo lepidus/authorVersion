@@ -1,5 +1,6 @@
 describe('Author Version - Delete versions', function () {
     let submissionData;
+    const markupJustification = 'Valid reason <b class="injectedJustificationMarkup">to submit</b> a version';
 
     before(function() {
         submissionData = {
@@ -69,7 +70,7 @@ describe('Author Version - Delete versions', function () {
         cy.waitJQuery();
         
         cy.get('button:contains("Submit New Version")').click();
-        cy.get('input[name="versionJustification"]').clear().type('Valid reason to submit a version', {delay: 0});
+        cy.get('input[name="versionJustification"]').clear().type(markupJustification, {delay: 0});
         cy.get('#submitVersionModal button:contains("Submit")').click();
     });
     it("Moderator - Checks can delete last version if it isn't posted", function () {
@@ -92,6 +93,21 @@ describe('Author Version - Delete versions', function () {
         cy.get('button:contains("Delete version")');
         cy.get('.pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
+    });
+    it('Version justification is shown as plain text on the preprint page', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.visit('index.php/publicknowledge/user/profile');
+        cy.request('index.php/publicknowledge/api/v1/submissions?count=100').then((response) => {
+            const submission = response.body.items.find(
+                (item) => JSON.stringify(item).includes(submissionData.title)
+            );
+            expect(submission, 'submission created by fpaglieri').to.exist;
+            cy.logout();
+            cy.visit('index.php/publicknowledge/preprint/view/' + submission.id);
+        });
+
+        cy.get('.versionJustification .value').should('contain', markupJustification);
+        cy.get('.versionJustification .injectedJustificationMarkup').should('not.exist');
     });
     it('Author - Creates new version without submitting', function () {
         cy.login('fpaglieri', null, 'publicknowledge');
