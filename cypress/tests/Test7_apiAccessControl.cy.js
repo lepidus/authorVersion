@@ -48,16 +48,25 @@ describe('Author Version - API access control', function () {
                 .its('status').should('be.oneOf', deniedStatuses);
         });
     });
-    it('Authorized moderator gets 400 for justifications that are not text', function () {
+    function expectJustificationFieldError(field) {
+        return (response) => {
+            expect(response.status).to.eq(400);
+            expect(response.body).to.have.property(field).that.is.an('array').and.not.empty;
+        };
+    }
+
+    it('Authorized moderator gets a field error for justifications that are not text', function () {
         getCsrfTokenAs('dbarnes').then((csrfToken) => {
             postToAuthorVersionApi('submitVersion', csrfToken, {versionJustification: ['not', 'text']})
-                .its('status').should('eq', 400);
+                .then(expectJustificationFieldError('versionJustification'));
+            postToAuthorVersionApi('submitVersion', csrfToken, {versionJustification: ''})
+                .then(expectJustificationFieldError('versionJustification'));
             postToAuthorVersionApi('versionJustification', csrfToken, {versionJustification: {text: 'not text'}})
-                .its('status').should('eq', 400);
+                .then(expectJustificationFieldError('versionJustification'));
             postToAuthorVersionApi('deleteVersion', csrfToken, {deletingJustification: ['not', 'text']})
-                .its('status').should('eq', 400);
+                .then(expectJustificationFieldError('deletingJustification'));
             postToAuthorVersionApi('versionJustification', csrfToken, {versionJustification: '   '})
-                .its('status').should('eq', 400);
+                .then(expectJustificationFieldError('versionJustification'));
         });
     });
 });
