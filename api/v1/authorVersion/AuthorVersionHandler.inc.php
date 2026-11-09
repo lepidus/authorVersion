@@ -55,10 +55,11 @@ class AuthorVersionHandler extends APIHandler
     public function submitVersion($slimRequest, $response, $args)
     {
         $requestParams = (array) $slimRequest->getParsedBody();
-        $versionJustification = $requestParams['versionJustification'] ?? null;
-        if (!$this->isValidJustification($versionJustification)) {
-            return $response->withStatus(400);
+        $errors = $this->validateJustification($requestParams, 'versionJustification');
+        if (!empty($errors)) {
+            return $response->withStatus(400)->withJson($errors);
         }
+        $versionJustification = $requestParams['versionJustification'];
         $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
@@ -80,10 +81,11 @@ class AuthorVersionHandler extends APIHandler
     public function deleteVersion($slimRequest, $response, $args)
     {
         $requestParams = (array) $slimRequest->getParsedBody();
-        $deletingJustification = $requestParams['deletingJustification'] ?? null;
-        if (!$this->isValidJustification($deletingJustification)) {
-            return $response->withStatus(400);
+        $errors = $this->validateJustification($requestParams, 'deletingJustification');
+        if (!empty($errors)) {
+            return $response->withStatus(400)->withJson($errors);
         }
+        $deletingJustification = $requestParams['deletingJustification'];
         $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
@@ -100,10 +102,11 @@ class AuthorVersionHandler extends APIHandler
     public function updateVersionJustification($slimRequest, $response, $args)
     {
         $requestParams = (array) $slimRequest->getParsedBody();
-        $versionJustification = $requestParams['versionJustification'] ?? null;
-        if (!$this->isValidJustification($versionJustification)) {
-            return $response->withStatus(400);
+        $errors = $this->validateJustification($requestParams, 'versionJustification');
+        if (!empty($errors)) {
+            return $response->withStatus(400)->withJson($errors);
         }
+        $versionJustification = $requestParams['versionJustification'];
         $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
@@ -173,9 +176,14 @@ class AuthorVersionHandler extends APIHandler
         $email->sendWithParams($params);
     }
 
-    private function isValidJustification($justification): bool
+    private function validateJustification(array $requestParams, string $field): array
     {
-        return is_string($justification) && trim($justification) !== '';
+        $justification = $requestParams[$field] ?? null;
+        if (is_string($justification) && trim($justification) !== '') {
+            return [];
+        }
+
+        return [$field => [__('validator.required')]];
     }
 
     private function getManagersAssigned($publication): array

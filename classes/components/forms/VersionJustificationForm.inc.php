@@ -18,6 +18,7 @@ class VersionJustificationForm extends FormComponent
         $this->addField(new FieldText('versionJustification', [
             'label' => __('plugins.generic.authorVersion.lastVersionJustification'),
             'value' => $publication->getData('versionJustification'),
+            'isRequired' => true,
             'size' => 'large',
         ]));
     }
