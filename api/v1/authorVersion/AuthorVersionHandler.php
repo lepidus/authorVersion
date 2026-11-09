@@ -4,8 +4,10 @@ namespace APP\plugins\generic\authorVersion\API\v1\authorVersion;
 
 use PKP\handler\APIHandler;
 use PKP\security\Role;
-use PKP\security\authorization\PolicySet;
-use PKP\security\authorization\RoleBasedHandlerOperationPolicy;
+use PKP\security\authorization\ContextAccessPolicy;
+use PKP\security\authorization\StageRolePolicy;
+use PKP\security\authorization\SubmissionAccessPolicy;
+use PKP\security\authorization\UserRolesRequiredPolicy;
 use PKP\submission\PKPSubmission;
 use PKP\db\DAORegistry;
 use APP\facades\Repo;
@@ -42,21 +44,31 @@ class AuthorVersionHandler extends APIHandler
 
     public function authorize($request, &$args, $roleAssignments)
     {
-        $rolePolicy = new PolicySet(PolicySet::COMBINING_PERMIT_OVERRIDES);
+        $routeName = $this->getSlimRequest()->getAttribute('route')->getName();
 
-        foreach ($roleAssignments as $role => $operations) {
-            $rolePolicy->addPolicy(new RoleBasedHandlerOperationPolicy($request, $role, $operations));
+        $this->addPolicy(new UserRolesRequiredPolicy($request), true);
+        $this->addPolicy(new ContextAccessPolicy($request, $roleAssignments));
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+
+        // Same production stage access required by the OPS versionPublication endpoint
+        $stageRoles = [Role::ROLE_ID_MANAGER, Role::ROLE_ID_SUB_EDITOR];
+        if ($routeName !== 'deleteVersion') {
+            $stageRoles[] = Role::ROLE_ID_AUTHOR;
         }
-        $this->addPolicy($rolePolicy);
+        $this->addPolicy(new StageRolePolicy($stageRoles, WORKFLOW_STAGE_ID_PRODUCTION, false));
 
         return parent::authorize($request, $args, $roleAssignments);
     }
 
     public function submitVersion($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
+        $requestParams = (array) $slimRequest->getParsedBody();
+        $errors = $this->validateJustification($requestParams, 'versionJustification');
+        if (!empty($errors)) {
+            return $response->withStatus(400)->withJson($errors);
+        }
         $versionJustification = $requestParams['versionJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
         if (
@@ -76,9 +88,13 @@ class AuthorVersionHandler extends APIHandler
 
     public function deleteVersion($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
+        $requestParams = (array) $slimRequest->getParsedBody();
+        $errors = $this->validateJustification($requestParams, 'deletingJustification');
+        if (!empty($errors)) {
+            return $response->withStatus(400)->withJson($errors);
+        }
         $deletingJustification = $requestParams['deletingJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
         if ($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED or $publication->getData('version') == 1) {
@@ -93,9 +109,13 @@ class AuthorVersionHandler extends APIHandler
 
     public function updateVersionJustification($slimRequest, $response, $args)
     {
-        $requestParams = $slimRequest->getParsedBody();
+        $requestParams = (array) $slimRequest->getParsedBody();
+        $errors = $this->validateJustification($requestParams, 'versionJustification');
+        if (!empty($errors)) {
+            return $response->withStatus(400)->withJson($errors);
+        }
         $versionJustification = $requestParams['versionJustification'];
-        $submission = $this->getSubmission($slimRequest);
+        $submission = $this->getAuthorizedContextObject(Application::ASSOC_TYPE_SUBMISSION);
         $publication = $submission->getLatestPublication();
 
         if ($publication->getData('status') == PKPSubmission::STATUS_PUBLISHED || $publication->getData('version') == 1) {
@@ -168,12 +188,14 @@ class AuthorVersionHandler extends APIHandler
         Mail::send($email);
     }
 
-    private function getSubmission($slimRequest)
+    private function validateJustification(array $requestParams, string $field): array
     {
-        $queryParams = $slimRequest->getQueryParams();
-        $submissionId = (int) $queryParams['submissionId'];
+        $justification = $requestParams[$field] ?? null;
+        if (is_string($justification) && trim($justification) !== '') {
+            return [];
+        }
 
-        return Repo::submission()->get($submissionId);
+        return [$field => [__('validator.required')]];
     }
 
     private function getManagersAssigned($publication): array

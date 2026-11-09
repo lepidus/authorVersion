@@ -1,4 +1,9 @@
 describe('Author Version - Submit new version', function () {
+    beforeEach(function () {
+        // Drop any session left by a request still running when the previous test ended
+        cy.logout();
+    });
+
     let firstVersionJustification = 'created to test';
     let secondVersionJustification = 'created to test the plugin';
     let finalVersionJustification = 'Version was created to test the Author Version plugin';
@@ -33,6 +38,17 @@ describe('Author Version - Submit new version', function () {
         cy.contains('View Woods').click({force: true});
         cy.get('button:contains("Version justification")').click();
         cy.get('input[name="versionJustification"]').should('have.value', firstVersionJustification);
+
+        cy.get('.pkpWorkflow__versionJustificationForm .pkpFormFieldLabel__required').should('exist');
+        cy.get('input[name="versionJustification"]').clear();
+        cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
+        cy.get('.pkpWorkflow__versionJustificationForm').should('contain', 'This field is required.');
+
+        // Blank text passes the browser check and must come back as a field error from the API
+        cy.get('input[name="versionJustification"]').type('   ', {delay: 0});
+        cy.get('.pkpWorkflow__versionJustificationForm').should('not.contain', 'This field is required.');
+        cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
+        cy.get('.pkpWorkflow__versionJustificationForm').should('contain', 'This field is required.');
 
         cy.get('input[name="versionJustification"]').clear().type(secondVersionJustification, {delay: 0});
         cy.get('.pkpWorkflow__versionJustificationForm button:contains("Save")').click();
