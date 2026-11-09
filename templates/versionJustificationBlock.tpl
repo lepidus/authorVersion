@@ -3,7 +3,7 @@
         {translate key="plugins.generic.authorVersion.versionJustification"}
     </h2>
 	<div class="value">
-        {$versionJustification}
+        {$versionJustification|escape}
     </div>
 </div>
 

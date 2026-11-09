@@ -1,5 +1,11 @@
 describe('Author Version - Delete versions', function () {
+    beforeEach(function () {
+        // Drop any session left by a request still running when the previous test ended
+        cy.logout();
+    });
+
     let submissionData;
+    const markupJustification = 'Valid reason <b class="injectedJustificationMarkup">to submit</b> a version';
 
     before(function() {
         submissionData = {
@@ -69,7 +75,7 @@ describe('Author Version - Delete versions', function () {
         cy.waitJQuery();
         
         cy.get('button:contains("Submit New Version")').click();
-        cy.get('input[name="versionJustification"]').clear().type('Valid reason to submit a version', {delay: 0});
+        cy.get('input[name="versionJustification"]').clear().type(markupJustification, {delay: 0});
         cy.get('#submitVersionModal button:contains("Submit")').click();
     });
     it("Moderator - Checks can delete last version if it isn't posted", function () {
@@ -92,6 +98,16 @@ describe('Author Version - Delete versions', function () {
         cy.get('button:contains("Delete version")');
         cy.get('.pkpHeader__actions button:contains("Post")').click();
         cy.get('.pkp_modal_panel button:contains("Post")').click();
+    });
+    it('Version justification is shown as plain text on the preprint page', function () {
+        cy.login('dbarnes', null, 'publicknowledge');
+        cy.get('#archive-button').click();
+        cy.contains('View Paglieri').click({force: true});
+        cy.get('#publication-button').click();
+        cy.get('.pkpHeader__actions a:contains("View")').click();
+
+        cy.get('.versionJustification .value').should('contain', markupJustification);
+        cy.get('.versionJustification .injectedJustificationMarkup').should('not.exist');
     });
     it('Author - Creates new version without submitting', function () {
         cy.login('fpaglieri', null, 'publicknowledge');
